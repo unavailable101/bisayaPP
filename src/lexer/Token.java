@@ -20,9 +20,9 @@ public class Token {
 //    for checking lng ni to see sakto bha
     @Override
     public String toString() {
-        return "Tokens{" +
+        return "\nTokens{" +
                 "type=" + type +
                 ", value='" + value + '\'' +
-                '}';
+                "}";
     }
 }

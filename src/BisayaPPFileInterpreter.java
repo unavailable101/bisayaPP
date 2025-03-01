@@ -1,11 +1,8 @@
 import lexer.Lexer;
-import lexer.Token;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Scanner;
 
 public class BisayaPPFileInterpreter {
     private static String filename;
@@ -24,10 +21,10 @@ public class BisayaPPFileInterpreter {
         try {
 //            List<String> code = Files.readAllLines(Paths.get(filename));
             Lexer lexer = new Lexer(Files.readAllLines(Paths.get(args[0])));
-//            lexer.tokenize();
-            for (Token token : lexer.tokenize()){
-                System.out.println(token);
-            }
+            lexer.readlines();
+//            for (Token token : lexer.tokenize()){
+//                System.out.println(token);
+//            }
 
         } catch (IOException e) {
             System.out.println("Unable to read file: " + filename);

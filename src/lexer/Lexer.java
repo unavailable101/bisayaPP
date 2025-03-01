@@ -1,45 +1,36 @@
 package lexer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
+//basic features sa ta hehe, later na ang conditional and loops
+//mas dako trabahoon ang basics
 
 public class Lexer {
 
-    private static final List<String> KEYWORDS = List.of(
-            // common
-            "SUGOD",
-            "KATAPUSAN",
+    private static final Map<String, TokenType> KEYWORDS = new HashMap<>();
+    private static final Map<String, TokenType> IDENTIFIERS = new HashMap<>();      //variables
 
-            "MUGNA",        // : variable declaration
-            "IPAKITA",      // : print
-            "DAWAT",        // : get input
-            "PUNDOK",       // basta tapok rani sila, ma gamit sa conditional ug sa loops
+    static{
+        KEYWORDS.put("SUGOD", TokenType.START_PROG);
+        KEYWORDS.put("KATAPUSAN", TokenType.END_PROG);
 
-            // conditional
-            "KUNG",         // : if
-            "WALA",         // : else (KUNG WALA), or default (WALA)
-            "DILI",         // : else if (KUNG DILI), not - logical operator (DILI)
-            "ILISAN",       // : switch
-            "KASO",         // : case
+        KEYWORDS.put("DAWAT", TokenType.INPUT);
+        KEYWORDS.put("IPAKITA", TokenType.OUTPUT);
 
-            // loops
-            "ALANG",         // : for - supposedly "ALANG SA" ni noh, pero kay token man, word for word, i add lang nako si "SA" unya
-            "SAMTANG",       // : while
-            "BUHAT",         // : do
+        KEYWORDS.put("MUGNA", TokenType.VAR_DECLARATION);
+        KEYWORDS.put("NUMERO", TokenType.DATA_TYPE);
+        KEYWORDS.put("LETRA", TokenType.DATA_TYPE);
+        KEYWORDS.put("TIPIK", TokenType.DATA_TYPE);
+        KEYWORDS.put("TINUOD", TokenType.DATA_TYPE);
+        KEYWORDS.put("PISI", TokenType.DATA_TYPE);
 
-            // logical operators
-            "UG",            // : and
-            "O"              // : or
-    );
+        KEYWORDS.put("UG", TokenType.LOG_OP);
+        KEYWORDS.put("O", TokenType.LOG_OP);
+        KEYWORDS.put("DILI", TokenType.LOG_OP);
 
-    private static final List<String> DATA_TYPES = List.of(
-            "NUMERO",     // : int
-            "LETRA",      // : char
-            "TINUOD",     // : boolean
-            "TIPIK",      // : double or with decimals, double nalang ni oi
-            "PISI"        // : string
-    );
+        KEYWORDS.put(null, TokenType.NONE);
+    }
+
 
     private final List<String> lines;
     private final List<Token> tokenLines;
@@ -59,100 +50,119 @@ public class Lexer {
     public Lexer(List<String> lines) {
         this.lines = lines;
         this.tokenLines = new ArrayList<>();
-        System.out.println(this.lines);
+//        System.out.println(this.lines);
     }
 
-    public List<Token> tokenize(){
+    public List<Token> readlines(){
 
         for (String line : lines){
-            processLine(line.trim());   //di ko mu basa sa way laman na line, that's not my priority
             System.out.println("reading line: " + (lines.indexOf(line) + 1));
-            System.out.println(tokenLines);
+            tokenizerTRM(line.trim());   //di ko mu basa sa way laman na line
         }
+        System.out.println(tokenLines);
 
         return tokenLines;
     }
 
-    public void processLine(String line){
-//        if (line.startsWith("--")){
-//            tokenLines.add(new Token(TokenType.COMMENT, line));
-//            return;
-//        }
+    public void tokenizerTRM(String line){          //TRM (Terminal Symbols): Keywords and operators
 
-        // ambot pero di lang cguro nako basahon kng mag sugod mag comment
-        // skip lang bha
-        if (line.startsWith("--")) return;
+        // skip comments, expected that a line starts with -- is a comment
+        if (line.startsWith("--") || line.isBlank()) return;
 
-        List<String> tokens = new ArrayList<>(Arrays.asList(line.split("\\s+")));      // split by whitespaces, split into tokens
-        for (String token : tokens){
-//            System.out.println("token: " + token);
-            if (DATA_TYPES.contains(token)) continue;   //  skip if data type, the keyword 'MUGNA' will handle that
+        List<String> lexemes = new ArrayList<>(Arrays.asList(line.split("\\s+")));
 
-            // if token is a keyword
-            // ma'am, nganu na man gyud space imo keyword TTOTT
-            if (KEYWORDS.contains(token)){
-
-                switch (token){
-                    case "MUGNA":   // i sagol, bale i store siya as 'MUGNA NUMERO' etc. continue bow
-                        addDataType(tokens); break;
-                    // might add a condition for 'KUNG' kay naa man 'KUNG DILI' etc., also for 'ALANG SA'
-                    case "KUNG":
-                        completeCondition(tokens); break;
-                    case "ALANG":
-                        completeFor(tokens); break;
-                    default:
-                        tokenLines.add(new Token(TokenType.KEYWORD, token)); // kani kay para for 1 word lamang, like 'SUGOD'
+        for (int i = 0; i< lexemes.size(); i++){
+            String lexeme = lexemes.get(i);
+            Object type = KEYWORDS.get(lexeme);  // ma return shag null kng wala sa hashmap, di dawaton ni default ang null, mag error, need sha i try-catch here
+            if (type != null) {
+                switch (KEYWORDS.get(lexeme)) {
+                    case TokenType.START_PROG:
+                        tokenLines.add(new Token(TokenType.START_PROG, lexeme)); break;
+                    case TokenType.VAR_DECLARATION:
+                        tokenLines.add(new Token(TokenType.VAR_DECLARATION, lexeme)); break;
+                    case TokenType.DATA_TYPE:
+                        tokenLines.add(new Token(TokenType.DATA_TYPE, lexeme)); break;
+                    case TokenType.LOG_OP:
+                        tokenLines.add(new Token(TokenType.LOG_OP, lexeme)); break;
+                    case TokenType.INPUT:
+                        tokenLines.add(new Token(TokenType.INPUT, lexeme)); break;
+                    case TokenType.OUTPUT:
+                        tokenLines.add(new Token(TokenType.OUTPUT, lexeme)); break;
+                    case TokenType.END_PROG:
+                        tokenLines.add(new Token(TokenType.END_PROG, lexeme)); break;
                 }
-
             }
-
-            // if token a variable
-            else if (token.matches("[a-zA-Z_][a-zA-Z0-9_]*")) tokenLines.add(new Token(TokenType.IDENTIFIER, token));
-
-            // if token is a value
-            else if (token.matches("[0-9]+")) tokenLines.add(new Token(TokenType.NUMBER, token));
-            else if (token.matches("\"[^\"]*\"")) tokenLines.add(new Token(TokenType.STRING, token));
-            else if (token.matches("'[^']'")) tokenLines.add(new Token(TokenType.CHARACTERS, token));
-
-            // if special symbols
-            else if (token.equals("&") || token.equals("$") || token.equals("[")) tokenLines.add(new Token(TokenType.SYMBOL, token));
-
-            // if mid-line comments
-//            else if (token.equals("--")) {
-//                tokenLines.add(new Token(TokenType.COMMENT, token));
-//                return;
-//            }
-
-            else    //dire na part kay kanang wa sila gi separate by spaces, so dire mag handle sa no space TTOTT
-                System.out.println("token: " + token);
+            else if (lexeme.contains("IPAKITA") || lexeme.contains("DAWAT")) checkIO(lexeme);
+            else if (lexeme.matches(":")) tokenLines.add(new Token(TokenType.COLON, lexeme));
+//            else if (lexeme.matches("^[a-zA-Z][a-zA-Z0-9_\\-+*=&^%$#@!?~`|\\\\/<>,.;()\\[\\]]*$")) {
+            else if (lexeme.matches("^[a-zA-Z][a-zA-Z0-9\\W_]*$")) {
+//                 convert to string kay mag nested for loop ko if dili, kapoy nang nested for loop oi, nya ang kuan sd ana, time complexity
+                tokenizeParts(String.join(" ",lexemes.subList(lexemes.indexOf(lexeme), lexemes.size())));
+                break;
+            }
+            else System.out.println("Unidentified Token: " + lexeme);
         }
 
     }
 
-    private void addDataType(List<String> token) throws IllegalArgumentException{
-        System.out.println("Check Data Type: " + token.get(1));
+    // from here, i tokenize nato the smaller parts where need nato i read char by char
+    // naa dire ang mga other types of tokens na dili keywords
+    // start - starting index from like asa ta nag undang kay dire nata mag sugod nasad basa, but lage mga smaller parts na
+    // end - pinaka last sa line
+//    private void tokenizeParts(int start, int end, List<String> lexemes){
+    private void tokenizeParts(String lexemes){
 
-        if (token.size() < 2) throw new IllegalArgumentException("Walay data type! Palihug kog butang ( NUMERO, LETRA, TIPIK, TINUOD, PISI )");
-        if (DATA_TYPES.contains(token.get(1))) tokenLines.add(new Token(TokenType.KEYWORD, token.get(0) + " " +token.get(1)) );      // keyword si 'MUGNA NUMERO' etc.
-        // else throw an exception na mu attempt shag create og variable pero walay data type
-        else throw new IllegalArgumentException("Sayop: " + token.get(1) + " kay dili data type");
-    }
+        StringBuilder buffer = new StringBuilder();
 
-    private void completeCondition(List<String> token) throws IllegalArgumentException {
-        if (KEYWORDS.contains(token.get(1))) {
-            switch (token.get(1)){
-                case "WALA":
-                case "DILI":
-                    tokenLines.add(new Token(TokenType.KEYWORD, token.get(0) + " " + token.get(1)) );
+        // skip delimiters ' '
+        for (int i = 0; i<lexemes.length() && lexemes.charAt(i) != ' '; i++){
+            switch (lexemes.charAt(i)){
+                case ',':
+                    addToken(buffer);
+                    tokenLines.add(new Token(TokenType.COMMA, String.valueOf(lexemes.charAt(i)))); break;
+                case '=':
+                    addToken(buffer);
+                    tokenLines.add(new Token(TokenType.ASS_OP, String.valueOf(lexemes.charAt(i)))); break;
+                case '+':
+                case '-':
+                case '*':
+                case '/':
+                case '%':
+                    addToken(buffer);
+                    tokenLines.add(new Token(TokenType.ARITH_OP, String.valueOf(lexemes.charAt(i)))); break;
+                case '$':
+                    addToken(buffer);
+                    tokenLines.add(new Token(TokenType.NEW_LINE, String.valueOf(lexemes.charAt(i)))); break;
+                case '&':
+                    addToken(buffer);
+                    tokenLines.add(new Token(TokenType.CONCAT, String.valueOf((lexemes.charAt(i))))); break;
+                    // diko kaybaw unsaon ang [], i consider ang naa sa sulod sa brackets, therefore unya nani hehe
                 default:
-                    if (token.get(1).charAt(0) == '(') tokenLines.add(new Token(TokenType.KEYWORD, token.get(0)));
-                    else throw new IllegalArgumentException("Sayop: wa ko kaila ni " + token.get(0) );
+                    buffer.append(lexemes.charAt(i));
+
             }
         }
+        System.out.println();
     }
 
-    private void completeFor(List<String> token) throws IllegalArgumentException {
-        if (token.get(1).equals("SA")) tokenLines.add(new Token(TokenType.KEYWORD, token.get(0) + " " + token.get(1)));
-        else throw new IllegalArgumentException("Sayop: Kulangan ka og 'SA'");
+    private void addToken(StringBuilder buff){
+        // katugon nako
     }
+
+    /*
+        para sa mga i/o tungod naay cases na instead of butang space between colon and keyword, magka duol sila
+            Example:
+                IPAKITA:        -- instead of IPAKITA :
+                DAWAT:
+
+        the rest need gyud silag space between
+    */
+    private void checkIO(String lexeme){
+        if (lexeme.endsWith(":")) {
+            tokenLines.add(new Token(KEYWORDS.get(lexeme.contains("IPAKITA") || lexeme.contains("DAWAT")), lexeme.substring(0, lexeme.length() - 1)));
+            tokenLines.add(new Token(TokenType.COLON, lexeme.substring(lexeme.length()-1)));
+        }
+        else throw new IllegalArgumentException("Sayop: Imo gipasabot ba kay " + (lexeme.contains("IPAKITA") ? "IPAKITA" : "DAWAT") + "?");
+    }
+
 }
