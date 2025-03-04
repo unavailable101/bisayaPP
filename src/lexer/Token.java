@@ -3,12 +3,13 @@ package lexer;
 public class Token {
     private final TokenType type;
     private final String value;
-    private final int line;
+    private int line;
 
-    public Token(TokenType type, String value, int line) {
+
+    public Token(TokenType type, String value) {
         this.type = type;
         this.value = value;
-        this.line = line;
+        this.line = -1;
     }
 
     public TokenType getType() {
@@ -19,12 +20,20 @@ public class Token {
         return value;
     }
 
-//    for checking lng ni to see sakto bha
+    public int getLine() {
+        return line;
+    }
+
+    public void setLine(int line){
+        this.line = line;
+    }
+
     @Override
     public String toString() {
-        return "Tokens{" +
+        return "Token{" +
                 "type=" + type +
                 ", value='" + value + '\'' +
-                "}";
+                ", line=" + line +
+                '}';
     }
 }

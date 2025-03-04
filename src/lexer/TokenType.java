@@ -24,11 +24,32 @@ public enum TokenType {
     OUTPUT,                 // : show output or print
 
     ASS_OP,                 // : = assignment operator
-    ARITH_OP,               // : arithmetic operations: +, -, *, /, %, <, >, <=, >=, ==, <>, (, )   -- unya nanang parenthesis, apil na dire ang unary operator
-    LOG_OP,                 // : logical operations: UG, O, DILI
+
+    // change of plans, ako sila tagsa-tagsaon TTOTT
+
+//    ARITH_OP,               // : arithmetic operations: +, -, *, /, %, <, >, <=, >=, ==, <>, (, )   -- unya nanang parenthesis, apil na dire ang unary operator
+    ARITH_ADD,              // : +
+    ARITH_MINUS,            // : -
+    ARITH_MULT,             // : *
+    ARITH_DIV,              // : /
+    ARITH_MOD,              // : %
+    ARITH_GT,               // : <
+    ARITH_LT,               // : >
+    ARITH_GOE,              // : <=
+    ARITH_LOE,              // :>=
+    ARITH_EQUAL,            // : ==
+    ARITH_NOT_EQUAL,        // : <>
+    ARITH_OPEN_P,           // : (
+    ARITH_CLOSE_P,          // : )
+
+//    LOG_OP,                 // : logical operations: UG, O, DILI
+    LOG_AND,                // : UG
+    LOG_OR,                 // : O
+    LOG_NOT,                // : DILI
+
+
 
 //    SYMBOL,               // : special symbol
-
     CONCAT,                 //      - &     : concat strings
     BRACKET_OPEN,           //      - []    : escape code
     BRACKET_CLOSE,
