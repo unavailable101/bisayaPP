@@ -53,6 +53,7 @@ public enum TokenType {
     CONCAT,                 //      - &     : concat strings
     BRACKET_OPEN,           //      - []    : escape code
     BRACKET_CLOSE,
+    ESCAPE_CODE,            // : ang value or code or whatever na naa sa sud sa brackets
     NEW_LINE,               //      - $     : next line (equivalent to \n)
 
     COLON,                  // : colons para sa katu 'IPAKITA' na keyword, i think part man sd na sha sa special symbol

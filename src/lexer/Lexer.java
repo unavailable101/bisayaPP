@@ -36,7 +36,8 @@ public class Lexer {
             new BoolLC(),
             new CharLC(),
             new StringLC(),
-            new NumLC()
+            new IntLC(),
+            new DoubleLC()
     );
 
 
@@ -65,7 +66,7 @@ public class Lexer {
 
         for (int i = 0; i<lines.size(); i++){
 
-            System.out.println("Reading line: " + (i+1));
+//            System.out.println("Reading line: " + (i+1));
 
             String line = lines.get(i).trim();
 
@@ -79,14 +80,7 @@ public class Lexer {
                 if (!lineToken.isEmpty()) tokenLines.add(lineToken);
             }
         }
-//        for (String line : lines){
-//            System.out.println("reading line: " + (lines.indexOf(line) + 1));
-//            tokenizerTRM(line.trim());   //di ko mu basa sa way laman na line     //botbot, basahon japun niya gwapa, i skip nga lang
-//        }
-//        System.out.println(tokenLine);
-//        tokenLines.add(tokenLine);
-//        tokenLine.clear();
-        for (List<Token> tl : tokenLines) System.out.println(tl);
+//        for (List<Token> tl : tokenLines) System.out.println(tl);
         return tokenLines;
     }
 
@@ -144,49 +138,56 @@ public class Lexer {
     private void tokenizeParts(String lexemes, List<Token> lineToken){
 
         StringBuilder lexeme = new StringBuilder();
-        boolean isChar;
-        boolean isString;
-        boolean isEscape;
+        boolean isChar, isString, isEscape;
 
         isEscape = isChar = isString = false;
 
         for (int i = 0; i<lexemes.length(); i++){
 
+            if (isChar){
+                isChar = false;
+                lexeme.append(lexemes.charAt(i));
+                lexeme.append(lexemes.charAt(i+1));
+                addToken(lexeme, lineToken, isEscape);
+                ++i;
+                lexeme = new StringBuilder();
+                continue;
+            }
             // skip delimiters ' ' or spaces
             if (lexemes.charAt(i) == ' ') {
-                addToken(lexeme, lineToken);
+                addToken(lexeme, lineToken, isEscape);
                 lexeme = new StringBuilder();
                 continue;
             }
 
             switch (lexemes.charAt(i)){
                 case ',':
-                    addToken(lexeme, lineToken);
+                    addToken(lexeme, lineToken, isEscape);
                     lineToken.add(new Token(TokenType.COMMA, String.valueOf(lexemes.charAt(i)))); break;
                 case '=':
-                    addToken(lexeme, lineToken);
+                    addToken(lexeme, lineToken, isEscape);
                     if (lexemes.charAt(i+1) == '='){
                         lineToken.add(new Token(TokenType.ARITH_EQUAL, lexemes.substring(i, i+2)));
                         ++i;
                     } else lineToken.add(new Token(TokenType.ASS_OP, String.valueOf(lexemes.charAt(i))));
                     break;
                 case '(':
-                    addToken(lexeme, lineToken);
+                    addToken(lexeme, lineToken, isEscape);
                     lineToken.add(new Token(TokenType.ARITH_OPEN_P, String.valueOf(lexemes.charAt(i)))); break;
                 case ')':
-                    addToken(lexeme, lineToken);
+                    addToken(lexeme, lineToken, isEscape);
                     lineToken.add(new Token(TokenType.ARITH_CLOSE_P, String.valueOf(lexemes.charAt(i)))); break;
                 case '+':
-                    addToken(lexeme, lineToken);
+                    addToken(lexeme, lineToken, isEscape);
                     lineToken.add(new Token(TokenType.ARITH_ADD, String.valueOf(lexemes.charAt(i)))); break;
                 case '*':
-                    addToken(lexeme, lineToken);
+                    addToken(lexeme, lineToken, isEscape);
                     lineToken.add(new Token(TokenType.ARITH_MULT, String.valueOf(lexemes.charAt(i)))); break;
                 case '/':
-                    addToken(lexeme, lineToken);
+                    addToken(lexeme, lineToken, isEscape);
                     lineToken.add(new Token(TokenType.ARITH_DIV, String.valueOf(lexemes.charAt(i)))); break;
                 case '%':
-                    addToken(lexeme, lineToken);
+                    addToken(lexeme, lineToken, isEscape);
                     lineToken.add(new Token(TokenType.ARITH_MOD, String.valueOf(lexemes.charAt(i)))); break;
                 case '-':
                     if (lexemes.charAt(i+1) == '-'){    // why tf you wont print nor add in the lineToken you motherfucker  // the fuck ganeha ra diay ni ni gana
@@ -195,12 +196,12 @@ public class Lexer {
                         lineToken.add(new Token(TokenType.COMMENT, lexemes.substring(i)));
                         return;
                     } else {
-                        addToken(lexeme, lineToken);
+                        addToken(lexeme, lineToken, isEscape);
                         lineToken.add(new Token(TokenType.ARITH_MINUS, String.valueOf(lexemes.charAt(i))));
                     }
                     break;
                 case '<':
-                    addToken(lexeme, lineToken);
+                    addToken(lexeme, lineToken, isEscape);
                     if (lexemes.charAt(i+1) == '>') {
                         lineToken.add(new Token(TokenType.ARITH_NOT_EQUAL, lexemes.substring(i, i + 2)));
                         ++i;
@@ -210,26 +211,22 @@ public class Lexer {
                     } else lineToken.add(new Token(TokenType.ARITH_GT, String.valueOf(lexemes.charAt(i))));
                     break;
                 case '>':
-                    addToken(lexeme, lineToken);
+                    addToken(lexeme, lineToken, isEscape);
                     if (lexemes.charAt(i+1) == '=') {
                         lineToken.add(new Token(TokenType.ARITH_LOE, lexemes.substring(i, i + 2)));
                         ++i;
                     } else lineToken.add(new Token(TokenType.ARITH_LT, String.valueOf(lexemes.charAt(i))));
                     break;
                 case '$':
-                    addToken(lexeme, lineToken);
+                    addToken(lexeme, lineToken, isEscape);
                     lineToken.add(new Token(TokenType.NEW_LINE, String.valueOf(lexemes.charAt(i)))); break;
                 case '&':
-                    addToken(lexeme, lineToken);
+                    addToken(lexeme, lineToken, isEscape);
                     lineToken.add(new Token(TokenType.CONCAT, String.valueOf((lexemes.charAt(i))))); break;
                 case '\'':
                     if (!isChar){
                         lexeme.append(lexemes.charAt(i));
                         isChar = true;
-                    } else {
-                        isChar = false;
-                        lexeme.append(lexemes.charAt(i));
-                        addToken(lexeme, lineToken);
                     }
                     break;
                 case '"':
@@ -237,28 +234,63 @@ public class Lexer {
                         lexeme.append(lexemes.charAt(i));
                         isString = true;
                     } else {
-                        isString = false;
                         lexeme.append(lexemes.charAt(i));
-                        addToken(lexeme, lineToken);
+                        addToken(lexeme, lineToken, isEscape);
+                        isString = false;
                     }
                     break;
-                    // diko kaybaw unsaon ang [], i consider ang naa sa sulod sa brackets, therefore unya nani hehe
+                case '[':
+                    if (isEscape) throw new IllegalArgumentException("Sayop: Wala nimo gi close ang bracket");
+                    isEscape = true;
+                    lineToken.add(new Token(TokenType.BRACKET_OPEN, String.valueOf(lexemes.charAt(i))));
+                    break;
+                case ']':
+                    if (!isEscape) throw new IllegalArgumentException("Sayop: Wala nimo gi close ang bracket");
+                    addToken(lexeme, lineToken, isEscape);
+                    lineToken.add(new Token(TokenType.BRACKET_CLOSE, String.valueOf(lexemes.charAt(i))));
+                    isEscape = false;
+                    break;
                 default:
 //                    System.out.println("Unidentified token part: " + lexemes.charAt(i));
                     lexeme.append(lexemes.charAt(i));
+//                    System.out.println(lexeme);
             }
         }
-            System.out.println();
+//            System.out.println();
+        addToken(lexeme, lineToken, isEscape);
     }
+//maam! kuyawan ko kng sayop ako ako gibuhat kay sakto sa ako test pero sayop sa sample TOTTT
+//sunod maam taronga imo double ug single quotes TTOTT special characters man na bha, maaan og variable maam TTOTT
 
-    private void addToken(StringBuilder str, List<Token> lineToken){
-        // katugon nako
-        if (str.isEmpty()) return;
+    private void addToken(StringBuilder str, List<Token> lineToken, boolean isEscape){
+        // mag himo kog mga exceptions na folder
+        // this should return syntax error
+//        System.out.println(str);
+        if (str.isEmpty() && isEscape) throw new IllegalArgumentException("Syntax Error: Walay sulod ang escape code");
+        else if (str.isEmpty()) return;
+
         String lexeme = str.toString();
+        boolean foundType = false;
 
+        for (LiteralChecker lc : literalCheckers){
+//            System.out.println(lexeme + " -> " + lc.getClass().getSimpleName());
+            if (lc.isLiteral(lexeme)){
+                lineToken.add(lc.addToken(lexeme));
+                foundType = true;
+                break;
+            }
+        }
 
-
-        lineToken.add(new Token(TokenType.VARIABLE, lexeme)); //if variable
+        if (!foundType) {
+            if (isEscape) {
+                lineToken.add(new Token(TokenType.ESCAPE_CODE, lexeme));
+                str.setLength(0);
+                return;
+            }
+            lineToken.add(new Token(TokenType.VARIABLE, lexeme)); //if variable
+            str.setLength(0);
+            return;
+        }
         str.setLength(0);
     }
 

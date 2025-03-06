@@ -3,14 +3,14 @@ package lexer.literals;
 import lexer.Token;
 import lexer.TokenType;
 
-public class CharLC implements LiteralChecker{
+public class DoubleLC implements LiteralChecker{
     @Override
     public boolean isLiteral(String lexeme) {
-        return lexeme.startsWith("'") && lexeme.endsWith("'") && lexeme.length()==3;
+        return lexeme.matches("\\d*\\.\\d+");
     }
 
     @Override
     public Token addToken(String lexeme) {
-        return new Token(TokenType.CHARACTERS, lexeme);
+        return new Token(TokenType.DOUBLE, lexeme);
     }
 }
