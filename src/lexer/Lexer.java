@@ -160,6 +160,9 @@ public class Lexer {
                 continue;
             }
 
+            //teka lang, daghan kog dapat i consider kng mag string ko aty samoka
+            //si string ang medjo ano, basta TTOTT
+
             switch (lexemes.charAt(i)){
                 case '"':
                     if (!isString){
@@ -178,8 +181,11 @@ public class Lexer {
                     }
                     break;
                 case ',':
-                    addToken(lexeme, lineToken, isEscape);
-                    lineToken.add(new Token(TokenType.COMMA, String.valueOf(lexemes.charAt(i)))); break;
+                    if (!isString) {
+                        addToken(lexeme, lineToken, isEscape);
+                        lineToken.add(new Token(TokenType.COMMA, String.valueOf(lexemes.charAt(i))));
+                    } else lexeme.append(lexemes.charAt(i));
+                    break;
                 case '=':
                     addToken(lexeme, lineToken, isEscape);
                     if (lexemes.charAt(i+1) == '='){
