@@ -80,11 +80,11 @@ public class Lexer {
                 if (!lineToken.isEmpty()) tokenLines.add(lineToken);
             }
         }
-//        for (List<Token> tl : tokenLines) System.out.println(tl);
+        for (List<Token> tl : tokenLines) System.out.println(tl);
         return tokenLines;
     }
 
-    public void tokenizerTRM(String line, List<Token> lineToken){          //TRM (Terminal Symbols): Keywords and operators
+    private void tokenizerTRM(String line, List<Token> lineToken){          //TRM (Terminal Symbols): Keywords and operators
 
         // skip comments, expected that a line starts with -- is a comment
         if (line.startsWith("--") || line.isBlank()) return;
@@ -154,13 +154,29 @@ public class Lexer {
                 continue;
             }
             // skip delimiters ' ' or spaces
-            if (lexemes.charAt(i) == ' ') {
+            if (lexemes.charAt(i) == ' ' && !isString) {
                 addToken(lexeme, lineToken, isEscape);
                 lexeme = new StringBuilder();
                 continue;
             }
 
             switch (lexemes.charAt(i)){
+                case '"':
+                    if (!isString){
+                        lexeme.append(lexemes.charAt(i));
+                        isString = true;
+                    } else {
+                        lexeme.append(lexemes.charAt(i));
+                        addToken(lexeme, lineToken, isEscape);
+                        isString = false;
+                    }
+                    break;
+                case '\'':
+                    if (!isChar){
+                        lexeme.append(lexemes.charAt(i));
+                        isChar = true;
+                    }
+                    break;
                 case ',':
                     addToken(lexeme, lineToken, isEscape);
                     lineToken.add(new Token(TokenType.COMMA, String.valueOf(lexemes.charAt(i)))); break;
@@ -223,22 +239,6 @@ public class Lexer {
                 case '&':
                     addToken(lexeme, lineToken, isEscape);
                     lineToken.add(new Token(TokenType.CONCAT, String.valueOf((lexemes.charAt(i))))); break;
-                case '\'':
-                    if (!isChar){
-                        lexeme.append(lexemes.charAt(i));
-                        isChar = true;
-                    }
-                    break;
-                case '"':
-                    if (!isString){
-                        lexeme.append(lexemes.charAt(i));
-                        isString = true;
-                    } else {
-                        lexeme.append(lexemes.charAt(i));
-                        addToken(lexeme, lineToken, isEscape);
-                        isString = false;
-                    }
-                    break;
                 case '[':
                     if (isEscape) throw new IllegalArgumentException("Sayop: Wala nimo gi close ang bracket");
                     isEscape = true;

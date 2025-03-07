@@ -20,8 +20,9 @@ public class BisayaPPFileInterpreter {
 
         try {
 //            List<String> code = Files.readAllLines(Paths.get(filename));
-            Lexer lexer = new Lexer(Files.readAllLines(Paths.get(args[0])));
-            lexer.readlines();
+            new Lexer(Files.readAllLines(Paths.get(args[0]))).readlines();
+//            Lexer lexer = new Lexer(Files.readAllLines(Paths.get(args[0])));
+//            lexer.readlines();
 //            for (Token token : lexer.tokenize()){
 //                System.out.println(token);
 //            }
