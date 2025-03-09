@@ -153,6 +153,17 @@ public class Lexer {
                 lexeme = new StringBuilder();
                 continue;
             }
+
+            if (isString){
+                lexeme.append(lexemes.charAt(i));
+                if (lexemes.charAt(i) == '"'){
+                    isString = false;
+                    addToken(lexeme, lineToken, isEscape);
+                    lexeme = new StringBuilder();
+                }
+                continue;
+            }
+
             // skip delimiters ' ' or spaces
             if (lexemes.charAt(i) == ' ' && !isString) {
                 addToken(lexeme, lineToken, isEscape);
@@ -181,11 +192,8 @@ public class Lexer {
                     }
                     break;
                 case ',':
-                    if (!isString) {
-                        addToken(lexeme, lineToken, isEscape);
+                     addToken(lexeme, lineToken, isEscape);
                         lineToken.add(new Token(TokenType.COMMA, String.valueOf(lexemes.charAt(i))));
-                    } else lexeme.append(lexemes.charAt(i));
-                    break;
                 case '=':
                     addToken(lexeme, lineToken, isEscape);
                     if (lexemes.charAt(i+1) == '='){
@@ -245,6 +253,7 @@ public class Lexer {
                 case '&':
                     addToken(lexeme, lineToken, isEscape);
                     lineToken.add(new Token(TokenType.CONCAT, String.valueOf((lexemes.charAt(i))))); break;
+                    //wa bitaw ko kasabot about aning escape code, ill ask unsa gyud ni sha
                 case '[':
                     if (isEscape) throw new IllegalArgumentException("Sayop: Wala nimo gi close ang bracket");
                     isEscape = true;
