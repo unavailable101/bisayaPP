@@ -84,51 +84,60 @@ public class Lexer {
         return tokenLines;
     }
 
-    private void tokenizerTRM(String line, List<Token> lineToken){          //TRM (Terminal Symbols): Keywords and operators
+    private void tokenizerTRM(String line, List<Token> lineToken) {          //TRM (Terminal Symbols): Keywords and operators
 
         // skip comments, expected that a line starts with -- is a comment
         if (line.startsWith("--") || line.isBlank()) return;
 
         List<String> lexemes = new ArrayList<>(Arrays.asList(line.split("\\s+")));
 
-        for (int i = 0; i< lexemes.size(); i++){
+        for (int i = 0; i < lexemes.size(); i++) {
             String lexeme = lexemes.get(i);
-            Object type = KEYWORDS.get(lexeme);  // ma return shag null kng wala sa hashmap, di dawaton ni default ang null, mag error, need sha i try-catch here
-            if (type != null) {
-                switch (KEYWORDS.get(lexeme)) {
-                    case TokenType.START_PROG:
-                        lineToken.add(new Token(TokenType.START_PROG, lexeme)); break;
-                    case TokenType.VAR_DECLARATION:
-                        lineToken.add(new Token(TokenType.VAR_DECLARATION, lexeme)); break;
-                    case TokenType.DATA_TYPE:
-                        lineToken.add(new Token(TokenType.DATA_TYPE, lexeme)); break;
-                    case TokenType.LOG_AND:
-                        lineToken.add(new Token(TokenType.LOG_AND, lexeme)); break;
-                    case TokenType.LOG_OR:
-                        lineToken.add(new Token(TokenType.LOG_OR, lexeme)); break;
-                    case TokenType.LOG_NOT:
-                        lineToken.add(new Token(TokenType.LOG_NOT, lexeme)); break;
-                    case TokenType.INPUT:
-                        lineToken.add(new Token(TokenType.INPUT, lexeme)); break;
-                    case TokenType.OUTPUT:
-                        lineToken.add(new Token(TokenType.OUTPUT, lexeme)); break;
-                    case TokenType.END_PROG:
-                        lineToken.add(new Token(TokenType.END_PROG, lexeme)); break;
-                }
+//            Object type = KEYWORDS.get(lexeme);  // ma return shag null kng wala sa hashmap, di dawaton ni default ang null, mag error, need sha i try-catch here
+//            if (type != null) {
+            switch (lexeme) {
+                case "SUGOD":
+                    lineToken.add(new Token(TokenType.START_PROG, lexeme));
+                    break;
+                case "MUGNA":
+                    lineToken.add(new Token(TokenType.VAR_DECLARATION, lexeme));
+                    break;
+                case "NUMERO":
+                case "LETRA":
+                case "TINUOD":
+                case "TIPIK":
+                case "PISI":
+                    lineToken.add(new Token(TokenType.DATA_TYPE, lexeme));
+                    break;
+                case "UG":
+                    lineToken.add(new Token(TokenType.LOG_AND, lexeme));
+                    break;
+                case "O":
+                    lineToken.add(new Token(TokenType.LOG_OR, lexeme));
+                    break;
+                case "DILI":
+                    lineToken.add(new Token(TokenType.LOG_NOT, lexeme));
+                    break;
+                case "DAWAT":
+                    lineToken.add(new Token(TokenType.INPUT, lexeme));
+                    break;
+                case "IPAKITA":
+                    lineToken.add(new Token(TokenType.OUTPUT, lexeme));
+                    break;
+                default:
+                    if (lexeme.contains("IPAKITA") || lexeme.contains("DAWAT")) checkIO(lexeme, lineToken);
+                    else if (lexeme.matches(":")) lineToken.add(new Token(TokenType.COLON, lexeme));
+                        //            else if (lexeme.matches("^[a-zA-Z][a-zA-Z0-9_\\-+*=&^%$#@!?~`|\\\\/<>,.;()\\[\\]]*$")) {
+                        //            else if (lexeme.matches("^[a-zA-Z][a-zA-Z0-9\\W_]*$")) {
+                    else if (lexeme.matches("^[\\s\\S]*$")) {
+                        //                 convert to string kay mag nested for loop ko if dili, kapoy nang nested for loop oi, nya ang kuan sd ana, time complexity
+                        tokenizeParts(String.join(" ", lexemes.subList(lexemes.indexOf(lexeme), lexemes.size())), lineToken);
+                        break;
+                    } else System.out.println("Unidentified Token: " + lexeme);
             }
-            else if (lexeme.contains("IPAKITA") || lexeme.contains("DAWAT")) checkIO(lexeme, lineToken);
-            else if (lexeme.matches(":")) lineToken.add(new Token(TokenType.COLON, lexeme));
-//            else if (lexeme.matches("^[a-zA-Z][a-zA-Z0-9_\\-+*=&^%$#@!?~`|\\\\/<>,.;()\\[\\]]*$")) {
-//            else if (lexeme.matches("^[a-zA-Z][a-zA-Z0-9\\W_]*$")) {
-            else if (lexeme.matches("^[\\s\\S]*$"))  {
-//                 convert to string kay mag nested for loop ko if dili, kapoy nang nested for loop oi, nya ang kuan sd ana, time complexity
-                tokenizeParts(String.join(" ",lexemes.subList(lexemes.indexOf(lexeme), lexemes.size())), lineToken);
-                break;
-            }
-            else System.out.println("Unidentified Token: " + lexeme);
         }
-
     }
+
 
     // from here, i tokenize nato the smaller parts where need nato i read char by char
     // naa dire ang mga other types of tokens na dili keywords
