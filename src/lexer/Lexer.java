@@ -91,7 +91,7 @@ public class Lexer {
 
         List<String> lexemes = new ArrayList<>(Arrays.asList(line.split("\\s+")));
 
-        for (int i = 0; i< lexemes.size(); i++){
+        for (int i = 0; i < lexemes.size(); i++){
             String lexeme = lexemes.get(i);
             Object type = KEYWORDS.get(lexeme);  // ma return shag null kng wala sa hashmap, di dawaton ni default ang null, mag error, need sha i try-catch here
             if (type != null) {
@@ -165,7 +165,7 @@ public class Lexer {
             }
 
             // skip delimiters ' ' or spaces
-            if (lexemes.charAt(i) == ' ' && !isString) {
+            if (lexemes.charAt(i) == ' ') {
                 addToken(lexeme, lineToken, isEscape);
                 lexeme = new StringBuilder();
                 continue;
@@ -193,7 +193,7 @@ public class Lexer {
                     break;
                 case ',':
                      addToken(lexeme, lineToken, isEscape);
-                        lineToken.add(new Token(TokenType.COMMA, String.valueOf(lexemes.charAt(i))));
+                     lineToken.add(new Token(TokenType.COMMA, String.valueOf(lexemes.charAt(i)))); break;
                 case '=':
                     addToken(lexeme, lineToken, isEscape);
                     if (lexemes.charAt(i+1) == '='){
