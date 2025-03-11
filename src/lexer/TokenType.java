@@ -33,10 +33,10 @@ public enum TokenType {
     ARITH_MULT,             // : *
     ARITH_DIV,              // : /
     ARITH_MOD,              // : %
-    ARITH_GT,               // : <
-    ARITH_LT,               // : >
-    ARITH_GOE,              // : <=
-    ARITH_LOE,              // :>=
+    ARITH_GT,               // : >
+    ARITH_LT,               // : <
+    ARITH_GOE,              // : >=
+    ARITH_LOE,              // : <=
     ARITH_EQUAL,            // : ==
     ARITH_NOT_EQUAL,        // : <>
     ARITH_OPEN_P,           // : (
@@ -53,14 +53,15 @@ public enum TokenType {
     CONCAT,                 //      - &     : concat strings
     BRACKET_OPEN,           //      - []    : escape code
     BRACKET_CLOSE,
-    ESCAPE_CODE,            // : ang value or code or whatever na naa sa sud sa brackets
+    ESCAPE_CODE,            // : ang value or code or whatever na naa sa sud sa brackets    //mga special symbols na dapat i print as characters, so usa rani na character
     NEW_LINE,               //      - $     : next line (equivalent to \n)
 
     COLON,                  // : colons para sa katu 'IPAKITA' na keyword, i think part man sd na sha sa special symbol
 
     COMMA,                  // : comma as in (,)
 
-    COMMENT,                // : starts with "--"
+    COMMENT,                // : starts with "--", and dawaton if mag --- or ----
+                            /// this is a comment
 
     NONE
 }
