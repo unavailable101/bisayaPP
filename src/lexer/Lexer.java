@@ -109,15 +109,6 @@ public class Lexer {
                 case "PISI":
                     lineToken.add(new Token(TokenType.DATA_TYPE, lexeme));
                     break;
-                case "UG":
-                    lineToken.add(new Token(TokenType.LOG_AND, lexeme));
-                    break;
-                case "O":
-                    lineToken.add(new Token(TokenType.LOG_OR, lexeme));
-                    break;
-                case "DILI":
-                    lineToken.add(new Token(TokenType.LOG_NOT, lexeme));
-                    break;
                 case "DAWAT":
                     lineToken.add(new Token(TokenType.INPUT, lexeme));
                     break;
@@ -126,14 +117,13 @@ public class Lexer {
                     break;
                 default:
                     if (lexeme.contains("IPAKITA") || lexeme.contains("DAWAT")) checkIO(lexeme, lineToken);
-                    else if (lexeme.matches(":")) lineToken.add(new Token(TokenType.COLON, lexeme));
                         //            else if (lexeme.matches("^[a-zA-Z][a-zA-Z0-9_\\-+*=&^%$#@!?~`|\\\\/<>,.;()\\[\\]]*$")) {
                         //            else if (lexeme.matches("^[a-zA-Z][a-zA-Z0-9\\W_]*$")) {
-                    else if (lexeme.matches("^[\\s\\S]*$")) {
+//                    else if (lexeme.matches("^[\\s\\S]*$")) {
+                    else tokenizeParts(String.join(" ", lexemes.subList(lexemes.indexOf(lexeme), lexemes.size())), lineToken);
                         //                 convert to string kay mag nested for loop ko if dili, kapoy nang nested for loop oi, nya ang kuan sd ana, time complexity
-                        tokenizeParts(String.join(" ", lexemes.subList(lexemes.indexOf(lexeme), lexemes.size())), lineToken);
-                        break;
-                    } else System.out.println("Unidentified Token: " + lexeme);
+//                        break;
+//                    } else System.out.println("Unidentified Token: " + lexeme);
             }
         }
     }
