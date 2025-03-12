@@ -148,7 +148,7 @@ public class Lexer {
         TokenState ts = new TokenState();
         TwoCharsOp tco = (c1, c2) -> String.valueOf(c1) + c2;
 
-        char whitespace = ' ';
+        char whitespace = ' ';  //way gamit
 
         for (int i = 0; i<lexemes.length(); i++){
 
