@@ -7,6 +7,13 @@ import java.util.*;
 //basic features sa ta hehe, later na ang conditional and loops
 //mas dako trabahoon ang basics
 
+
+//lambda
+@FunctionalInterface
+interface TwoCharsOp{
+    String createOp(char c1, char c2);
+}
+
 public class Lexer {
 
     private static final Map<String, TokenType> KEYWORDS = new HashMap<>();
@@ -74,7 +81,7 @@ public class Lexer {
 
                 List<Token> lineToken = new ArrayList<>();
 
-                tokenizerTRM(line, lineToken);
+                tokenMKeywords(line, lineToken);
                 for (Token t : lineToken) t.setLine(i+1);
 //                System.out.println(lineToken);
                 if (!lineToken.isEmpty()) tokenLines.add(lineToken);
@@ -84,50 +91,46 @@ public class Lexer {
         return tokenLines;
     }
 
-    private void tokenizerTRM(String line, List<Token> lineToken){          //TRM (Terminal Symbols): Keywords and operators
+    //TRM (Terminal Symbols): Keywords and operators
+    //this functions is for all main keywords
+    private void tokenMKeywords(String line, List<Token> lineToken) {
 
         // skip comments, expected that a line starts with -- is a comment
         if (line.startsWith("--") || line.isBlank()) return;
 
         List<String> lexemes = new ArrayList<>(Arrays.asList(line.split("\\s+")));
 
-        for (int i = 0; i < lexemes.size(); i++){
+        for (int i = 0; i < lexemes.size(); i++) {
             String lexeme = lexemes.get(i);
-            Object type = KEYWORDS.get(lexeme);  // ma return shag null kng wala sa hashmap, di dawaton ni default ang null, mag error, need sha i try-catch here
-            if (type != null) {
-                switch (KEYWORDS.get(lexeme)) {
-                    case TokenType.START_PROG:
-                        lineToken.add(new Token(TokenType.START_PROG, lexeme)); break;
-                    case TokenType.VAR_DECLARATION:
-                        lineToken.add(new Token(TokenType.VAR_DECLARATION, lexeme)); break;
-                    case TokenType.DATA_TYPE:
-                        lineToken.add(new Token(TokenType.DATA_TYPE, lexeme)); break;
-                    case TokenType.LOG_AND:
-                        lineToken.add(new Token(TokenType.LOG_AND, lexeme)); break;
-                    case TokenType.LOG_OR:
-                        lineToken.add(new Token(TokenType.LOG_OR, lexeme)); break;
-                    case TokenType.LOG_NOT:
-                        lineToken.add(new Token(TokenType.LOG_NOT, lexeme)); break;
-                    case TokenType.INPUT:
-                        lineToken.add(new Token(TokenType.INPUT, lexeme)); break;
-                    case TokenType.OUTPUT:
-                        lineToken.add(new Token(TokenType.OUTPUT, lexeme)); break;
-                    case TokenType.END_PROG:
-                        lineToken.add(new Token(TokenType.END_PROG, lexeme)); break;
-                }
-            }
-            else if (lexeme.contains("IPAKITA") || lexeme.contains("DAWAT")) checkIO(lexeme, lineToken);
-            else if (lexeme.matches(":")) lineToken.add(new Token(TokenType.COLON, lexeme));
-//            else if (lexeme.matches("^[a-zA-Z][a-zA-Z0-9_\\-+*=&^%$#@!?~`|\\\\/<>,.;()\\[\\]]*$")) {
-//            else if (lexeme.matches("^[a-zA-Z][a-zA-Z0-9\\W_]*$")) {
-            else if (lexeme.matches("^[\\s\\S]*$"))  {
-//                 convert to string kay mag nested for loop ko if dili, kapoy nang nested for loop oi, nya ang kuan sd ana, time complexity
-                tokenizeParts(String.join(" ",lexemes.subList(lexemes.indexOf(lexeme), lexemes.size())), lineToken);
-                break;
-            }
-            else System.out.println("Unidentified Token: " + lexeme);
-        }
 
+            switch (lexeme) {
+                case "SUGOD":
+                    lineToken.add(new Token(TokenType.START_PROG, lexeme));
+                    break;
+                case "MUGNA":
+                    lineToken.add(new Token(TokenType.VAR_DECLARATION, lexeme));
+                    break;
+                case "NUMERO":
+                case "LETRA":
+                case "TINUOD":
+                case "TIPIK":
+                case "PISI":
+                    lineToken.add(new Token(TokenType.DATA_TYPE, lexeme));
+                    break;
+                case "DAWAT":
+                    lineToken.add(new Token(TokenType.INPUT, lexeme));
+                    break;
+                case "IPAKITA":
+                    lineToken.add(new Token(TokenType.OUTPUT, lexeme));
+                    break;
+                default:
+                    if (lexeme.contains("IPAKITA") || lexeme.contains("DAWAT")) checkIO(lexeme, lineToken);
+                    else {
+                        tokenizeParts(String.join(" ", lexemes.subList(lexemes.indexOf(lexeme), lexemes.size())), lineToken);
+                        return;
+                    }
+            }
+        }
     }
 
     // from here, i tokenize nato the smaller parts where need nato i read char by char
@@ -142,141 +145,130 @@ public class Lexer {
 
         isEscape = isChar = isString = false;
 
+        TokenState ts = new TokenState();
+        TwoCharsOp tco = (c1, c2) -> String.valueOf(c1) + c2;
+
+        char whitespace = ' ';
+
         for (int i = 0; i<lexemes.length(); i++){
 
-            if (isChar){
-                isChar = false;
-                lexeme.append(lexemes.charAt(i));
-                lexeme.append(lexemes.charAt(i+1));
-                addToken(lexeme, lineToken, isEscape);
-                ++i;
-                lexeme = new StringBuilder();
-                continue;
-            }
+            TokenState.STATE state = ts.tokenState(lexemes.charAt(i));
 
-            if (isString){
-                lexeme.append(lexemes.charAt(i));
-                if (lexemes.charAt(i) == '"'){
-                    isString = false;
-                    addToken(lexeme, lineToken, isEscape);
-                    lexeme = new StringBuilder();
-                }
-                continue;
-            }
 
-            // skip delimiters ' ' or spaces
-            if (lexemes.charAt(i) == ' ') {
-                addToken(lexeme, lineToken, isEscape);
-                lexeme = new StringBuilder();
-                continue;
-            }
+            switch(state){
 
-            //teka lang, daghan kog dapat i consider kng mag string ko aty samoka
-            //si string ang medjo ano, basta TTOTT
+                case TokenState.STATE.WHITESPACE:
+                    break;
 
-            switch (lexemes.charAt(i)){
-                case '"':
-                    if (!isString){
+                // literals, identifiers, and keywords
+                case TokenState.STATE.UPPER_CASE :
+                    // assuming these are other keywords like UG, O, DILI
+                    while (i < lexemes.length() && Character.isUpperCase(lexemes.charAt(i))){
+                        // LexicalException gyud ni siya
+                        if (i >= lexemes.length()) throw new IllegalArgumentException("Unterminated character literal at position " + i);
                         lexeme.append(lexemes.charAt(i));
-                        isString = true;
-                    } else {
+                        ++i;
+                    }
+                    --i;
+                    addToken(lexeme, lineToken, isEscape);
+                    break;
+                case TokenState.STATE.LOWER_CASE:
+                case TokenState.STATE.UNDERSCORE:
+                    //assume na variable/identifier ni siya
+                    while (i < lexemes.length() && (Character.isLetterOrDigit(lexemes.charAt(i)) || lexemes.charAt(i) == '_')){
+                        // LexicalException gyud ni siya
+                        if (i >= lexemes.length()) throw new IllegalArgumentException("Unterminated character literal at position " + i);
                         lexeme.append(lexemes.charAt(i));
-                        addToken(lexeme, lineToken, isEscape);
-                        isString = false;
+                        ++i;
                     }
+                    --i;
+                    addToken(lexeme, lineToken, isEscape);
                     break;
-                case '\'':
-                    if (!isChar){
+                case TokenState.STATE.NUMBER:
+                    // integer or decimal
+                    while(i < lexemes.length() && (Character.isDigit(lexemes.charAt(i)) || lexemes.charAt(i) == '.')){
+                        // LexicalException gyud ni siya
+                        if (i >= lexemes.length()) throw new IllegalArgumentException("Unterminated character literal at position " + i);
+
                         lexeme.append(lexemes.charAt(i));
-                        isChar = true;
+                        ++i;
                     }
+                    --i;
+                    addToken(lexeme, lineToken, isEscape);
                     break;
-                case ',':
-                     addToken(lexeme, lineToken, isEscape);
-                     lineToken.add(new Token(TokenType.COMMA, String.valueOf(lexemes.charAt(i)))); break;
-                case '=':
-                    addToken(lexeme, lineToken, isEscape);
-                    if (lexemes.charAt(i+1) == '='){
-                        lineToken.add(new Token(TokenType.ARITH_EQUAL, lexemes.substring(i, i+2)));
-                        ++i;
-                    } else lineToken.add(new Token(TokenType.ASS_OP, String.valueOf(lexemes.charAt(i))));
-                    break;
-                case '(':
-                    addToken(lexeme, lineToken, isEscape);
-                    lineToken.add(new Token(TokenType.ARITH_OPEN_P, String.valueOf(lexemes.charAt(i)))); break;
-                case ')':
-                    addToken(lexeme, lineToken, isEscape);
-                    lineToken.add(new Token(TokenType.ARITH_CLOSE_P, String.valueOf(lexemes.charAt(i)))); break;
-                case '+':
-                    addToken(lexeme, lineToken, isEscape);
-                    lineToken.add(new Token(TokenType.ARITH_ADD, String.valueOf(lexemes.charAt(i)))); break;
-                case '*':
-                    addToken(lexeme, lineToken, isEscape);
-                    lineToken.add(new Token(TokenType.ARITH_MULT, String.valueOf(lexemes.charAt(i)))); break;
-                case '/':
-                    addToken(lexeme, lineToken, isEscape);
-                    lineToken.add(new Token(TokenType.ARITH_DIV, String.valueOf(lexemes.charAt(i)))); break;
-                case '%':
-                    addToken(lexeme, lineToken, isEscape);
-                    lineToken.add(new Token(TokenType.ARITH_MOD, String.valueOf(lexemes.charAt(i)))); break;
-                case '-':
-                    if (lexemes.charAt(i+1) == '-'){    // why tf you wont print nor add in the lineToken you motherfucker  // the fuck ganeha ra diay ni ni gana
-                        //so ok na ang inline comments
-                        //from this char to the last char at this current line kay i store as comment, mag substring ko ani? then set i to length-1 or better i break
-                        lineToken.add(new Token(TokenType.COMMENT, lexemes.substring(i)));
-                        return;
-                    } else {
-                        addToken(lexeme, lineToken, isEscape);
-                        lineToken.add(new Token(TokenType.ARITH_MINUS, String.valueOf(lexemes.charAt(i))));
-                    }
-                    break;
-                case '<':
-                    addToken(lexeme, lineToken, isEscape);
-                    if (lexemes.charAt(i+1) == '>') {
-                        lineToken.add(new Token(TokenType.ARITH_NOT_EQUAL, lexemes.substring(i, i + 2)));
-                        ++i;
-                    } else if (lexemes.charAt(i+1) == '=') {
-                        lineToken.add(new Token(TokenType.ARITH_GOE, lexemes.substring(i, i + 2)));
-                        ++i;
-                    } else lineToken.add(new Token(TokenType.ARITH_GT, String.valueOf(lexemes.charAt(i))));
-                    break;
-                case '>':
-                    addToken(lexeme, lineToken, isEscape);
-                    if (lexemes.charAt(i+1) == '=') {
-                        lineToken.add(new Token(TokenType.ARITH_LOE, lexemes.substring(i, i + 2)));
-                        ++i;
-                    } else lineToken.add(new Token(TokenType.ARITH_LT, String.valueOf(lexemes.charAt(i))));
-                    break;
-                case '$':
-                    addToken(lexeme, lineToken, isEscape);
-                    lineToken.add(new Token(TokenType.NEW_LINE, String.valueOf(lexemes.charAt(i)))); break;
-                case '&':
-                    addToken(lexeme, lineToken, isEscape);
-                    lineToken.add(new Token(TokenType.CONCAT, String.valueOf((lexemes.charAt(i))))); break;
-                    //wa bitaw ko kasabot about aning escape code, ill ask unsa gyud ni sha
-                case '[':
-                    if (isEscape) throw new IllegalArgumentException("Sayop: Wala nimo gi close ang bracket");
+
+                // symbols
+                case TokenState.STATE.BRACKET:
+                    // for escape
+                    // unya nalang bitaw ni si brackets kay i can't think straight, char
                     isEscape = true;
                     lineToken.add(new Token(TokenType.BRACKET_OPEN, String.valueOf(lexemes.charAt(i))));
                     break;
-                case ']':
-                    if (!isEscape) throw new IllegalArgumentException("Sayop: Wala nimo gi close ang bracket");
-                    addToken(lexeme, lineToken, isEscape);
-                    lineToken.add(new Token(TokenType.BRACKET_CLOSE, String.valueOf(lexemes.charAt(i))));
-                    isEscape = false;
-                    break;
-                default:
-//                    System.out.println("Unidentified token part: " + lexemes.charAt(i));
+                case TokenState.STATE.COMMA:
+                    lineToken.add(new Token(TokenType.COMMA, String.valueOf(lexemes.charAt(i)))); break;
+                case TokenState.STATE.CONCAT:
+                    lineToken.add(new Token(TokenType.CONCAT, String.valueOf(lexemes.charAt(i)))); break;
+                case TokenState.STATE.NEW_LINE:
+                    lineToken.add(new Token(TokenType.NEW_LINE, String.valueOf(lexemes.charAt(i)))); break;
+                case TokenState.STATE.SINGLE_Q:
                     lexeme.append(lexemes.charAt(i));
-//                    System.out.println(lexeme);
+                    isChar = true;
+                    ++i;
+                    while (isChar){
+                        // LexicalException gyud ni siya
+                        if (i >= lexemes.length()) throw new IllegalArgumentException("Unterminated character literal at position " + i);
+                        if (lexemes.charAt(i) == '\'') isChar = false;
+                        lexeme.append(lexemes.charAt(i));
+                        ++i;
+                    }
+                    addToken(lexeme, lineToken, isEscape);
+                    break;
+                case TokenState.STATE.DOUBLE_Q:
+                    lexeme.append(lexemes.charAt(i));
+                    isString = true;
+                    ++i;
+                    while (isString){
+                        // LexicalException gyud ni siya
+                        if (i >= lexemes.length()) throw new IllegalArgumentException("Unterminated character literal at position " + i);
+                        if (lexemes.charAt(i) == '"') isString = false;
+                        lexeme.append(lexemes.charAt(i));
+                        ++i;
+                    }
+                    addToken(lexeme, lineToken, isEscape);
+                    break;
+
+                // operators
+                case TokenState.STATE.ARITH_OP:
+                    addOperations(String.valueOf(lexemes.charAt(i)), lineToken); break;
+                case TokenState.STATE.MINUS:
+                    if (lexemes.charAt(i+1) == '-'){
+                        lineToken.add(new Token(TokenType.COMMENT, lexemes.substring(i)));
+                        return;
+                    }
+                    addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
+                    break;
+                case TokenState.STATE.GT:
+                    if (lexemes.charAt(i+1) == '>' ||lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
+
+                    else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
+                    break;
+                case TokenState.STATE.LT:
+                    if (lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
+                    else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
+                    break;
+                case TokenState.STATE.EQUALS:
+                    if (lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
+                    else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
+                    break;
+                case TokenState.STATE.NONE:
+                    System.out.println("State is NONE: " + lexemes.charAt(i));
             }
         }
-//            System.out.println();
-        addToken(lexeme, lineToken, isEscape);
     }
 //maam! kuyawan ko kng sayop ako ako gibuhat kay sakto sa ako test pero sayop sa sample TOTTT
 //sunod maam taronga imo double ug single quotes TTOTT special characters man na bha, maaan og variable maam TTOTT
 
+    //for identifiers and literals lang ni sha oi
     private void addToken(StringBuilder str, List<Token> lineToken, boolean isEscape){
         // mag himo kog mga exceptions na folder
         // this should return syntax error
@@ -286,6 +278,21 @@ public class Lexer {
 
         String lexeme = str.toString();
         boolean foundType = false;
+
+        switch (lexeme){
+            case "UG":
+                lineToken.add(new Token(TokenType.LOG_AND, lexeme));
+                foundType = true;
+                break;
+            case "O":
+                lineToken.add(new Token(TokenType.LOG_OR, lexeme));
+                foundType = true;
+                break;
+            case "DILI":
+                lineToken.add(new Token(TokenType.LOG_NOT, lexeme));
+                foundType = true;
+                break;
+        }
 
         for (LiteralChecker lc : literalCheckers){
 //            System.out.println(lexeme + " -> " + lc.getClass().getSimpleName());
@@ -307,6 +314,47 @@ public class Lexer {
             return;
         }
         str.setLength(0);
+    }
+
+    private void addOperations(String token, List<Token> lineToken){
+        TokenType type = TokenType.NONE;
+        switch (token){
+            //arithmetic
+            case "+":
+                type = TokenType.ARITH_ADD; break;
+            case "-":
+                type = TokenType.ARITH_MINUS; break;
+            case "*":
+                type = TokenType.ARITH_MULT; break;
+            case "/":
+                type = TokenType.ARITH_DIV; break;
+            case "%":
+                type = TokenType.ARITH_MOD; break;
+            case "(":
+                type = TokenType.ARITH_OPEN_P; break;
+            case ")":
+                type = TokenType.ARITH_CLOSE_P; break;
+
+            // relational
+            case ">":
+                type = TokenType.ARITH_GT; break;
+            case ">=":
+                type = TokenType.ARITH_GOE; break;
+            case "<":
+                type = TokenType.ARITH_LT; break;
+            case "<=":
+                type = TokenType.ARITH_LOE; break;
+            case "<>":
+                type = TokenType.ARITH_NOT_EQUAL; break;
+            case "==":
+                type = TokenType.ARITH_EQUAL; break;
+
+            // assignment operation
+            case "=":
+                type = TokenType.ASS_OP; break;
+        }
+        if (type == TokenType.NONE) throw new IllegalArgumentException("Not an operator");
+        lineToken.add(new Token(type, String.valueOf(token)));
     }
 
     /*
