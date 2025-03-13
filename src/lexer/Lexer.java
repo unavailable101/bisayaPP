@@ -154,6 +154,7 @@ public class Lexer {
 
             TokenState.STATE state = ts.tokenState(lexemes.charAt(i));
 
+
             switch(state){
 
                 case TokenState.STATE.WHITESPACE:
