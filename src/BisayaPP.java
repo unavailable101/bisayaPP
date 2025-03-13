@@ -1,10 +1,11 @@
 import lexer.Lexer;
+import parser.Parser;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class BisayaPPFileInterpreter {
+public class BisayaPP {
     private static String filename;
 
     public static void main(String[] args) throws Exception{
@@ -21,6 +22,7 @@ public class BisayaPPFileInterpreter {
         try {
 //            List<String> code = Files.readAllLines(Paths.get(filename));
             new Lexer(Files.readAllLines(Paths.get(args[0]))).readlines();
+            new Parser(new Lexer(Files.readAllLines(Paths.get(args[0]))).readlines());
 //            Lexer lexer = new Lexer(Files.readAllLines(Paths.get(args[0])));
 //            lexer.readlines();
 //            for (Token token : lexer.tokenize()){
