@@ -87,7 +87,9 @@ public class Lexer {
                 if (!lineToken.isEmpty()) tokenLines.add(lineToken);
             }
         }
-        for (List<Token> tl : tokenLines) System.out.println(tl);
+        // print all tokens
+        // makita langa ng katag
+//        for (List<Token> tl : tokenLines) System.out.println(tl);
         return tokenLines;
     }
 

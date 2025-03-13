@@ -21,8 +21,8 @@ public class BisayaPP {
 
         try {
 //            List<String> code = Files.readAllLines(Paths.get(filename));
-            new Lexer(Files.readAllLines(Paths.get(args[0]))).readlines();
-            new Parser(new Lexer(Files.readAllLines(Paths.get(args[0]))).readlines());
+//            new Lexer(Files.readAllLines(Paths.get(args[0]))).readlines();
+            new Parser(new Lexer(Files.readAllLines(Paths.get(args[0]))).readlines()).parse();
 //            Lexer lexer = new Lexer(Files.readAllLines(Paths.get(args[0])));
 //            lexer.readlines();
 //            for (Token token : lexer.tokenize()){
