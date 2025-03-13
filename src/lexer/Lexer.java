@@ -106,6 +106,8 @@ public class Lexer {
             switch (lexeme) {
                 case "SUGOD":
                     lineToken.add(new Token(TokenType.START_PROG, lexeme));
+                case "KATAPUSAN":
+                    lineToken.add(new Token(TokenType.END_PROG, lexeme));
                     break;
                 case "MUGNA":
                     lineToken.add(new Token(TokenType.VAR_DECLARATION, lexeme));
@@ -262,6 +264,9 @@ public class Lexer {
                     break;
                 case TokenState.STATE.NONE:
                     System.out.println("State is NONE: " + lexemes.charAt(i));
+                default:
+                    // error
+                    System.err.println("Unexpeted chatacter: " + lexemes.charAt(i) + " at line " + lineToken.getLast().getLine());
             }
         }
     }
@@ -309,7 +314,7 @@ public class Lexer {
                 str.setLength(0);
                 return;
             }
-            lineToken.add(new Token(TokenType.VARIABLE, lexeme)); //if variable
+            lineToken.add(new Token(TokenType.IDENTIFIER, lexeme)); //if variable
             str.setLength(0);
             return;
         }
