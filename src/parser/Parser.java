@@ -20,7 +20,7 @@ import java.util.List;
 
     < statement >           ->      < output_statement >  |
                                     < input_statement >   |
-                                    < expr_statement >
+                                    < var_declare >
 
     < expr_statement >      ->      < var_declare >     |
                                     < assign >          |
@@ -64,15 +64,14 @@ public class Parser {
     private final List<List<Token>> lineTokens;
     private int line;
 
-
-    private static int endLine;
-
     public Parser(List<List<Token>> lineTokens) {
         this.lineTokens = lineTokens;
-        this.line = 0;
+        this.line = -1;
     }
 
     public List<Statement> parse(){
+
+        int size = 0;
 
         if (lineTokens.getFirst().getFirst() != lineTokens.getFirst().getLast() &&
                 lineTokens.getFirst().getFirst().getType() != TokenType.START_PROG)
@@ -85,26 +84,30 @@ public class Parser {
                 lineTokens.getLast().getLast().getType() != TokenType.END_PROG)
             //dapat SyntaxError ni dire
             throw new IllegalArgumentException("Expected 'KATAPUSAN' after line " + lineTokens.getLast().getLast().getLine());
-        else setEndLine(lineTokens.getLast().getLast().getLine());
+        else size = lineTokens.size()-1;
 
-        //dire rako kutob ehe
-
-        List<Token> tokens = nextLine();
-
-
+        //dire rako kutob eh
         List<Statement> statements = new ArrayList<>();
+        List<Token> tokens;
 
-
+        for (int i = 1; i < size; i++) {
+            tokens = nextLine();
+            statements.add(statement(tokens));
+        }
 
         return statements;
     }
 
-    List<Token> nextLine(){
-        return lineTokens.get(line);
+    private Statement statement(List<Token> tokens){
+        Statement st = null;
+
+        // ambot na oi
+
+        return st;
     }
 
-    public static void setEndLine(int endLine) {
-        Parser.endLine = endLine;
+    List<Token> nextLine(){
+        return lineTokens.get(++line);
     }
 
 }
