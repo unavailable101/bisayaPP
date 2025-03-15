@@ -202,6 +202,8 @@ public class Lexer {
                     break;
 
                 // symbols
+                case TokenState.STATE.COLON:
+                    lineToken.add(new Token(TokenType.COLON, String.valueOf(lexemes.charAt(i)))); break;
                 case TokenState.STATE.BRACKET:
                     // for escape
                     // unya nalang bitaw ni si brackets kay i can't think straight, char
@@ -264,11 +266,9 @@ public class Lexer {
                     if (lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
                     else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
-                case TokenState.STATE.NONE:
-                    System.out.println("State is NONE: " + lexemes.charAt(i));
                 default:
                     // error
-                    System.err.println("Unexpeted chatacter: " + lexemes.charAt(i) + " at line " + lineToken.getLast().getLine());
+                    System.err.println("Unexpeted character: " + lexemes.charAt(i) + " at line " + lineToken.getLast().getLine());
             }
         }
     }
@@ -301,12 +301,14 @@ public class Lexer {
                 break;
         }
 
-        for (LiteralChecker lc : literalCheckers){
+        if (!foundType) {
+            for (LiteralChecker lc : literalCheckers) {
 //            System.out.println(lexeme + " -> " + lc.getClass().getSimpleName());
-            if (lc.isLiteral(lexeme)){
-                lineToken.add(lc.addToken(lexeme));
-                foundType = true;
-                break;
+                if (lc.isLiteral(lexeme)) {
+                    lineToken.add(lc.addToken(lexeme));
+                    foundType = true;
+                    break;
+                }
             }
         }
 

@@ -83,6 +83,8 @@ public class TokenState {
                     state = STATE.UNDERSCORE;
                     break;
                 case ' ':
+                case '\n':
+                case '\t':
                     state = STATE.WHITESPACE; break;
                 default:
                     if (Character.isDigit(c)) state = STATE.NUMBER;
