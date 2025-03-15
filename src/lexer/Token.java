@@ -2,11 +2,11 @@ package lexer;
 
 public class Token {
     private final TokenType type;
-    private final String value;
+    private final Object value;
     private int line;
 
 
-    public Token(TokenType type, String value) {
+    public Token(TokenType type, Object value) {
         this.type = type;
         this.value = value;
         this.line = -1;
@@ -16,7 +16,7 @@ public class Token {
         return type;
     }
 
-    public String getValue() {
+    public Object getValue() {
         return value;
     }
 

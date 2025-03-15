@@ -14,6 +14,6 @@ public class DoubleLC implements LiteralChecker{
 
     @Override
     public Token addToken(String lexeme) {
-        return new Token(TokenType.DOUBLE, lexeme);
+        return new Token(TokenType.DOUBLE, Double.valueOf(lexeme));
     }
 }

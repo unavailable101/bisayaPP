@@ -11,6 +11,6 @@ public class IntLC implements LiteralChecker{
 
     @Override
     public Token addToken(String lexeme) {
-        return new Token(TokenType.INTEGER, lexeme);
+        return new Token(TokenType.INTEGER, Integer.valueOf(lexeme));
     }
 }
