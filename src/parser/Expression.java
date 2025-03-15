@@ -81,9 +81,11 @@ public abstract class Expression {
     // < expression > -> IDENTIFIER
     static class Variable extends Expression{
         final Token name;
+        final Expression initializer;
 
-        public Variable(Token name) {
+        public Variable(Token name, Expression initializer) {
             this.name = name;
+            this.initializer = initializer;
         }
     }
 

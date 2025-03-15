@@ -8,10 +8,10 @@ public abstract class Statement {
 
     // < statement >    ->      < expr_statement >
     static class Expr extends Statement {
-        final List<Statement> statements;
+        final Expression expression;
 
-        Expr(List<Statement> statements){
-            this.statements = statements;
+        Expr(Expression expression){
+            this.expression = expression;
         }
     }
 
@@ -38,7 +38,7 @@ public abstract class Statement {
         final Expression initialization;
 //        final Variable var;
 
-        VarDeclaration(Token type, Token name, Expression initialization) {
+        VarDeclaration(Token type, Expression initialization) {
             this.type = type;
             this.initialization = initialization;
 //            this.var = var;
