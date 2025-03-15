@@ -11,24 +11,25 @@
                                     < var_declare >       |
                                     < expr_statement >
 
-    < expr_statement >      ->      < assign >      |
+    < expr_statement >      ->      < expression >
 
     < var_declare >         ->      VAR_DECLARATION < data_type >  ( IDENTIFIER | < assign > (COMMA < assign >)* )
 
     < data_type >           ->      "NUMERO" | "lETRA" | "TIPIK" | "TINUOD" | "PISI"
 
+    < expression >          ->      < literal >             |
+                                    IDENTIFIER              |
+                                    < unary_expression >    |
+                                    < binary_operation >    |
+                                    < logic_operation >     |
+                                    < group_expression >    |
+                                    < assign >
+
     < assign >              ->      IDENTIFIER ASSIGN_OP ( < assign > | < expression >)
 
-    < expression >          ->      ( < literal > | IDENTIFIER )    |
-                                    < unary >                       |
-                                    < binary_operation >            |
-                                    < group_expression >
+    < literal >             ->      INTEGER | DOUBLE | STRING | CHARACTERS | BOOLEAN
 
-    < literal >             ->      INTEGER | DOUBLE | STRING | CHARACTERS | < boolean >
-
-    < boolean >             ->      "OO" | "DILI"
-
-    < unary >               ->      ( ARITH_ADD | ARITH_MINUS ) ( literal | IDENTIFIER )
+    < unary_expression >    ->      ( ARITH_ADD | ARITH_MINUS ) ( < literal>  | IDENTIFIER )
 
     < binary_operation >    ->      < expression > < arith_operator > < expression >
 
@@ -36,7 +37,11 @@
 
     < group_expression >    ->      OPEN_P < expression > CLOSE_P
 
-    < output_statement >    ->      OUTPUT COLON <  >
+    < logic_operation >     ->      < expression > < logic_operators > < expression >
+
+    < logic_operators >     ->      AND | OR | NOT
+
+    < output_statement >    ->      OUTPUT COLON < expression >
 
     < input_statement >     ->      INPUT COLON IDENTIFIER (COMMA IDENTIFIER)*
 
