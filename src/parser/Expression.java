@@ -4,6 +4,17 @@ import lexer.Token;
 
 public abstract class Expression {
 
+    abstract <R> R accept (Visitor<R> visitor);
+
+    interface Visitor<R>{
+        R visitUnary(Unary expression);
+        R visitBinary(Binary expression);
+        R visitLogic(Logic expression);
+        R visitGroup(Group expression);
+        R visitLiteral(Literal expression);
+        R visitAssign(Assign expression);
+        R visitVariable(Variable expression);
+    }
     // < expression >   -> < unaru >
     // < unary >        -> ( ADD | MINUS) ( < literal > | IDENTIFIER )
     static class Unary extends Expression{
@@ -13,6 +24,11 @@ public abstract class Expression {
         public Unary(Token op, Expression right) {
             this.op = op;
             this.right = right;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitUnary(this);
         }
     }
 
@@ -28,6 +44,11 @@ public abstract class Expression {
             this.right = right;
             this.operator = operator;
         }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitBinary(this);
+        }
     }
 
     // < expression >           -> < logic_operation >
@@ -42,6 +63,11 @@ public abstract class Expression {
             this.right = right;
             this.logic_op = logic_op;
         }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitLogic(this);
+        }
     }
 
     // < expression >   -> < group >
@@ -52,17 +78,25 @@ public abstract class Expression {
         public Group(Expression expression) {
             this.expression = expression;
         }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitGroup(this);
+        }
     }
 
     // < expression >   -> < literal >
     // < literal >        -> INTEGER | DOUBLE | STRING | CHARACTERS | BOOLEAN
     static class Literal extends Expression{
-        final Token literalType;
-        final Object value;
+        final Token literal;
 
-        public Literal(Token literalType, Object value) {
-            this.literalType = literalType;
-            this.value = value;
+        public Literal(Token literal) {
+            this.literal = literal;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitLiteral(this);
         }
     }
 
@@ -76,6 +110,11 @@ public abstract class Expression {
             this.name = name;
             this.expression = expression;
         }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitAssign(this);
+        }
     }
 
     // < expression > -> IDENTIFIER
@@ -86,6 +125,11 @@ public abstract class Expression {
         public Variable(Token name, Expression initializer) {
             this.name = name;
             this.initializer = initializer;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitVariable(this);
         }
     }
 
