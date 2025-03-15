@@ -39,7 +39,6 @@ public class Parser {
 
         //dire rako kutob eh
         List<Statement> statements = new ArrayList<>();
-        List<Token> tokens;
 
         for (int i = 1; i < size; i++) {
             statements.add(statement(lineTokens.get(i)));
@@ -50,11 +49,18 @@ public class Parser {
     }
 
     private Statement statement(List<Token> tokens){
-        switch (tokens.get(0).getType()){
-            case TokenType.OUTPUT: return outputStatement(tokens);
-            case TokenType.INPUT: return inputStatement(tokens);
-            case TokenType.VAR_DECLARATION: return varDeclare(tokens);
-            default: return exprStatement(tokens);
+        switch (currToken(tokens).getType()){
+            case TokenType.OUTPUT:
+                nextToken(tokens);
+                return outputStatement(tokens);
+            case TokenType.INPUT:
+                nextToken(tokens);
+                return inputStatement(tokens);
+            case TokenType.VAR_DECLARATION:
+                nextToken(tokens);
+                return varDeclare(tokens);
+            default:
+                return exprStatement(tokens);
         }
     }
 
@@ -88,18 +94,67 @@ public class Parser {
     //                         < group_expression >    |
     //                         < assign >
     private Expression expression(List<Token> tokens){
+        // literals
+        if (
+                currToken(tokens).getType() == TokenType.INTEGER    ||
+                currToken(tokens).getType() == TokenType.DOUBLE     ||
+                currToken(tokens).getType() == TokenType.CHARACTERS ||
+                currToken(tokens).getType() == TokenType.STRING     ||
+                currToken(tokens).getType() == TokenType.BOOLEAN
+        ) return new Expression.Literal(currToken(tokens));
+
+
+        // identifiers/variables
+        if (currToken(tokens).getType() == TokenType.IDENTIFIER){
+            if (indx < tokens.size()){
+                nextToken(tokens);
+                if (currToken(tokens).getType() == TokenType.ASS_OP) return new Expression.Assign(prevToken(tokens), expression(tokens));
+                if (
+                        currToken(tokens).getType() == TokenType.ARITH_GT       ||
+                        currToken(tokens).getType() == TokenType.ARITH_LT       ||
+                        currToken(tokens).getType() == TokenType.ARITH_GOE      ||
+                        currToken(tokens).getType() == TokenType.ARITH_LOE      ||
+                        currToken(tokens).getType() == TokenType.ARITH_EQUAL    ||
+                        currToken(tokens).getType() == TokenType.ARITH_NOT_EQUAL
+                ) return new Expression.Compare(expression(tokens), currToken(tokens), expression(tokens));
+                if (
+                        currToken(tokens).getType() == TokenType.LOG_OR     ||
+                        currToken(tokens).getType() == TokenType.LOG_NOT    ||
+                        currToken(tokens).getType() == TokenType.LOG_AND
+                ) return new Expression.Logic(expression(tokens), currToken(tokens), expression(tokens));
+
+                if (
+                        currToken(tokens).getType() == TokenType.ARITH_ADD      ||
+                        currToken(tokens).getType() == TokenType.ARITH_MINUS    ||
+                        currToken(tokens).getType() == TokenType.ARITH_DIV      ||
+                        currToken(tokens).getType() == TokenType.ARITH_MULT     ||
+                        currToken(tokens).getType() == TokenType.ARITH_MOD
+                ) return new Expression.Binary(expression(tokens), currToken(tokens), expression(tokens));
+
+            }
+            return new Expression.Variable(currToken(tokens));
+        }
+
+        if (
+                currToken(tokens).getType() == TokenType.ARITH_ADD ||
+                currToken(tokens).getType() == TokenType.ARITH_MINUS
+        ){
+            return new Expression.Unary(currToken(tokens), expression(tokens));
+        }
+
         return null;
     }
 
-    private Expression unary (List<Token> tokens){
-        Token isSymbol = currToken(tokens);
-        if (check(isSymbol, TokenType.ARITH_ADD) || check(isSymbol, TokenType.ARITH_MINUS))
-        return new Expression.Unary(isSymbol, expression(tokens));
-        return null;    // ambot sakto bha ni
+    private Token nextToken (List<Token> tokens){
+        return indx < tokens.size() ? tokens.get(indx+1) : tokens.get(tokens.size()-1);
     }
 
     private Token currToken (List<Token> tokens){
-        return indx+1  > tokens.size() ? tokens.get(++indx) : tokens.get(indx);
+        return indx  > tokens.size() ? tokens.get(indx) : tokens.get(tokens.size()-1);
+    }
+
+    private Token prevToken (List<Token> tokens){
+        return tokens.get(indx-1);
     }
 
     private Token consume(Token curr, TokenType type, String error){

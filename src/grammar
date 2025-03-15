@@ -17,12 +17,13 @@
 
     < data_type >           ->      "NUMERO" | "lETRA" | "TIPIK" | "TINUOD" | "PISI"
 
-    < expression >          ->      < literal >             |
-                                    IDENTIFIER              |
-                                    < unary_expression >    |
-                                    < binary_operation >    |
-                                    < logic_operation >     |
-                                    < group_expression >    |
+    < expression >          ->      < literal >              |
+                                    IDENTIFIER               |
+                                    < unary_expression >     |
+                                    < binary_operation >     |
+                                    < compare_operation >    |
+                                    < logic_operation >      |
+                                    < group_expression >     |
                                     < assign >
 
     < assign >              ->      IDENTIFIER ASSIGN_OP ( < assign > | < expression >)
@@ -33,7 +34,11 @@
 
     < binary_operation >    ->      < expression > < arith_operator > < expression >
 
-    < arith_operators >     ->      ADD | MINUS | MULT | DIV | MOD | GT | LT | GOE | LOE | EQUAL | NOT_EQUAL
+    < arith_operators >     ->      ADD | MINUS | MULT | DIV | MOD
+
+    < compare_operation >   ->      < expression > < compare_operator > < expression >
+
+    < compare_operators >   ->      GT | LT | GOE | LOE | EQUAL | NOT_EQUAL
 
     < group_expression >    ->      OPEN_P < expression > CLOSE_P
 

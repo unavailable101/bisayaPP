@@ -14,6 +14,7 @@ public abstract class Expression {
         R visitLiteral(Literal expression);
         R visitAssign(Assign expression);
         R visitVariable(Variable expression);
+        R visitCompare(Compare expression);
     }
     // < expression >   -> < unaru >
     // < unary >        -> ( ADD | MINUS) ( < literal > | IDENTIFIER )
@@ -120,16 +121,30 @@ public abstract class Expression {
     // < expression > -> IDENTIFIER
     static class Variable extends Expression{
         final Token name;
-        final Expression initializer;
 
-        public Variable(Token name, Expression initializer) {
+        public Variable(Token name) {
             this.name = name;
-            this.initializer = initializer;
         }
 
         @Override
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitVariable(this);
+        }
+    }
+
+    static class Compare extends Expression{
+        final Expression left, right;
+        final Token op;
+
+        public Compare(Expression left, Token op, Expression right) {
+            this.left = left;
+            this.right = right;
+            this.op = op;
+        }
+
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitCompare(this);
         }
     }
 
