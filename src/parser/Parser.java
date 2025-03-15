@@ -10,54 +10,6 @@ import java.util.List;
 // we meet again
 // akala ko graduate na ako sayo, pero hindi pa pala
 
-/*
-    grammar
-
-    < program >             ->      START_PROG < statements > END_PROG
-
-    < statements >          ->      < statement > | < statements >
-    -- each line is a statement already, so mahug automatic shag new line
-
-    < statement >           ->      < output_statement >  |
-                                    < input_statement >   |
-                                    < var_declare >
-
-    < expr_statement >      ->      < var_declare >     |
-                                    < assign >          |
-
-    < var_declare >         ->      VAR_DECLARATION < data_type >  < var >
-
-    < data_type >           ->      "NUMERO" | "lETRA" | "TIPIK" | "TINUOD" | "PISI"
-
-    < var >                 ->      IDENTIFIER  |
-                                    < assign >  |
-                                    COMMA < var >
-
-    < assign >              ->      IDENTIFIER ASSIGN_OP ( < assign > | < expression >)
-
-    < expression >          ->      ( < literal > | IDENTIFIER )    |
-                                    < unary >                       |
-                                    < binary_operation >            |
-                                    < group_expression >
-
-    < literal >             ->      INTEGER | DOUBLE | STRING | CHARACTERS | < boolean >
-
-    < boolean >             ->      "OO" | "DILI"
-
-    < unary >               ->      ( ARITH_ADD | ARITH_MINUS ) ( literal | IDENTIFIER )
-
-    < binary_operation >    ->      < expression > < arith_operator > < expression >
-
-    < arith_operators >     ->      ADD | MINUS | MULT | DIV | MOD | GT | LT | GOE | LOE | EQUAL | NOT_EQUAL
-
-    < group_expression >    ->      OPEN_P < expression > CLOSE_P
-
-    < output_statement >    ->      OUTPUT COLON <  >
-
-    < input_statement >     ->      INPUT COLON IDENTIFIER (COMMA IDENTIFIER)*
-
-*/
-
 public class Parser {
     //naa na dire ang laay
     //kapoy
@@ -91,23 +43,35 @@ public class Parser {
         List<Token> tokens;
 
         for (int i = 1; i < size; i++) {
-            tokens = nextLine();
-            statements.add(statement(tokens));
+            statements.add(statement(lineTokens.get(i)));
         }
 
         return statements;
     }
 
     private Statement statement(List<Token> tokens){
-        Statement st = null;
 
-        // ambot na oi
-
-        return st;
+        switch (tokens.get(0).getType()){
+            case TokenType.OUTPUT: return outputStatement(tokens);
+            case TokenType.INPUT: return inputStatement(tokens);
+            case TokenType.VAR_DECLARATION: return varDeclare(tokens);
+            default: return exprStatement(tokens);
+        }
     }
 
-    List<Token> nextLine(){
-        return lineTokens.get(++line);
+    private Statement varDeclare(List<Token> tokens){
+        return null;
     }
 
+    private Statement outputStatement(List<Token> tokens){
+        return null;
+    }
+
+    private Statement inputStatement(List<Token> tokens){
+        return null;
+    }
+
+    private Statement exprStatement (List<Token> tokens){
+        return null;
+    }
 }
