@@ -1,7 +1,5 @@
 package lexer;
 
-import lexer.literals.*;
-
 import java.util.*;
 
 //basic features sa ta hehe, later na ang conditional and loops
@@ -40,11 +38,11 @@ public class Lexer {
     }
 
     private static final List<LiteralChecker> literalCheckers = List.of(
-            new BoolLC(),
-            new CharLC(),
-            new StringLC(),
-            new IntLC(),
-            new DoubleLC()
+            new LiteralChecker.BoolLC(),
+            new LiteralChecker.CharLC(),
+            new LiteralChecker.StringLC(),
+            new LiteralChecker.IntLC(),
+            new LiteralChecker.DoubleLC()
     );
 
 
