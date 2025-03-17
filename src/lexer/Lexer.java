@@ -2,6 +2,9 @@ package lexer;
 
 import java.util.*;
 
+import static lexer.TokenState.*;
+import static lexer.TokenType.*;
+
 //basic features sa ta hehe, later na ang conditional and loops
 //mas dako trabahoon ang basics
 
@@ -17,24 +20,24 @@ public class Lexer {
     private static final Map<String, TokenType> KEYWORDS = new HashMap<>();
 
     static{
-        KEYWORDS.put("SUGOD", TokenType.START_PROG);
-        KEYWORDS.put("KATAPUSAN", TokenType.END_PROG);
+        KEYWORDS.put("SUGOD", START_PROG);
+        KEYWORDS.put("KATAPUSAN", END_PROG);
 
-        KEYWORDS.put("DAWAT", TokenType.INPUT);
-        KEYWORDS.put("IPAKITA", TokenType.OUTPUT);
+        KEYWORDS.put("DAWAT", INPUT);
+        KEYWORDS.put("IPAKITA", OUTPUT);
 
-        KEYWORDS.put("MUGNA", TokenType.VAR_DECLARATION);
-        KEYWORDS.put("NUMERO", TokenType.DATA_TYPE);
-        KEYWORDS.put("LETRA", TokenType.DATA_TYPE);
-        KEYWORDS.put("TIPIK", TokenType.DATA_TYPE);
-        KEYWORDS.put("TINUOD", TokenType.DATA_TYPE);
-        KEYWORDS.put("PISI", TokenType.DATA_TYPE);
+        KEYWORDS.put("MUGNA", VAR_DECLARATION);
+        KEYWORDS.put("NUMERO", DATA_TYPE);
+        KEYWORDS.put("LETRA", DATA_TYPE);
+        KEYWORDS.put("TIPIK", DATA_TYPE);
+        KEYWORDS.put("TINUOD", DATA_TYPE);
+        KEYWORDS.put("PISI", DATA_TYPE);
 
-        KEYWORDS.put("UG", TokenType.LOG_AND);
-        KEYWORDS.put("O", TokenType.LOG_OR);
-        KEYWORDS.put("DILI", TokenType.LOG_NOT);
+        KEYWORDS.put("UG", LOG_AND);
+        KEYWORDS.put("O", LOG_OR);
+        KEYWORDS.put("DILI", LOG_NOT);
 
-        KEYWORDS.put(null, TokenType.NONE);     // wa man ni gamit oi, di man ni ma recognize
+        KEYWORDS.put(null, NONE);     // wa man ni gamit oi, di man ni ma recognize
     }
 
     private static final List<LiteralChecker> literalCheckers = List.of(
@@ -105,25 +108,25 @@ public class Lexer {
 
             switch (lexeme) {
                 case "SUGOD":
-                    lineToken.add(new Token(TokenType.START_PROG, lexeme));
+                    lineToken.add(new Token(START_PROG, lexeme));
                 case "KATAPUSAN":
-                    lineToken.add(new Token(TokenType.END_PROG, lexeme));
+                    lineToken.add(new Token(END_PROG, lexeme));
                     break;
                 case "MUGNA":
-                    lineToken.add(new Token(TokenType.VAR_DECLARATION, lexeme));
+                    lineToken.add(new Token(VAR_DECLARATION, lexeme));
                     break;
                 case "NUMERO":
                 case "LETRA":
                 case "TINUOD":
                 case "TIPIK":
                 case "PISI":
-                    lineToken.add(new Token(TokenType.DATA_TYPE, lexeme));
+                    lineToken.add(new Token(DATA_TYPE, lexeme));
                     break;
                 case "DAWAT":
-                    lineToken.add(new Token(TokenType.INPUT, lexeme));
+                    lineToken.add(new Token(INPUT, lexeme));
                     break;
                 case "IPAKITA":
-                    lineToken.add(new Token(TokenType.OUTPUT, lexeme));
+                    lineToken.add(new Token(OUTPUT, lexeme));
                     break;
                 default:
                     if (lexeme.contains("IPAKITA") || lexeme.contains("DAWAT")) checkIO(lexeme, lineToken);
@@ -154,16 +157,16 @@ public class Lexer {
 
         for (int i = 0; i<lexemes.length(); i++){
 
-            TokenState.STATE state = ts.tokenState(lexemes.charAt(i));
+            STATE state = ts.tokenState(lexemes.charAt(i));
 
 
             switch(state){
 
-                case TokenState.STATE.WHITESPACE:
+                case STATE.WHITESPACE:
                     break;
 
                 // literals, identifiers, and keywords
-                case TokenState.STATE.UPPER_CASE :
+                case STATE.UPPER_CASE :
                     // assuming these are other keywords like UG, O, DILI
                     while (i < lexemes.length() && Character.isUpperCase(lexemes.charAt(i))){
                         // LexicalException gyud ni siya
@@ -174,8 +177,8 @@ public class Lexer {
                     --i;
                     addToken(lexeme, lineToken, isEscape);
                     break;
-                case TokenState.STATE.LOWER_CASE:
-                case TokenState.STATE.UNDERSCORE:
+                case STATE.LOWER_CASE:
+                case STATE.UNDERSCORE:
                     //assume na variable/identifier ni siya
                     while (i < lexemes.length() && (Character.isLetterOrDigit(lexemes.charAt(i)) || lexemes.charAt(i) == '_')){
                         // LexicalException gyud ni siya
@@ -186,7 +189,7 @@ public class Lexer {
                     --i;
                     addToken(lexeme, lineToken, isEscape);
                     break;
-                case TokenState.STATE.NUMBER:
+                case STATE.NUMBER:
                     // integer or decimal
                     while(i < lexemes.length() && (Character.isDigit(lexemes.charAt(i)) || lexemes.charAt(i) == '.')){
                         // LexicalException gyud ni siya
@@ -200,21 +203,21 @@ public class Lexer {
                     break;
 
                 // symbols
-                case TokenState.STATE.COLON:
-                    lineToken.add(new Token(TokenType.COLON, String.valueOf(lexemes.charAt(i)))); break;
-                case TokenState.STATE.BRACKET:
+                case STATE.COLON:
+                    lineToken.add(new Token(COLON, String.valueOf(lexemes.charAt(i)))); break;
+                case STATE.BRACKET:
                     // for escape
                     // unya nalang bitaw ni si brackets kay i can't think straight, char
                     isEscape = true;
-                    lineToken.add(new Token(TokenType.BRACKET_OPEN, String.valueOf(lexemes.charAt(i))));
+                    lineToken.add(new Token(BRACKET_OPEN, String.valueOf(lexemes.charAt(i))));
                     break;
-                case TokenState.STATE.COMMA:
-                    lineToken.add(new Token(TokenType.COMMA, String.valueOf(lexemes.charAt(i)))); break;
-                case TokenState.STATE.CONCAT:
-                    lineToken.add(new Token(TokenType.CONCAT, String.valueOf(lexemes.charAt(i)))); break;
-                case TokenState.STATE.NEW_LINE:
-                    lineToken.add(new Token(TokenType.NEW_LINE, String.valueOf(lexemes.charAt(i)))); break;
-                case TokenState.STATE.SINGLE_Q:
+                case STATE.COMMA:
+                    lineToken.add(new Token(COMMA, String.valueOf(lexemes.charAt(i)))); break;
+                case STATE.CONCAT:
+                    lineToken.add(new Token(CONCAT, String.valueOf(lexemes.charAt(i)))); break;
+                case STATE.NEW_LINE:
+                    lineToken.add(new Token(NEW_LINE, String.valueOf(lexemes.charAt(i)))); break;
+                case STATE.SINGLE_Q:
                     lexeme.append(lexemes.charAt(i));
                     isChar = true;
                     ++i;
@@ -227,7 +230,7 @@ public class Lexer {
                     }
                     addToken(lexeme, lineToken, isEscape);
                     break;
-                case TokenState.STATE.DOUBLE_Q:
+                case STATE.DOUBLE_Q:
                     lexeme.append(lexemes.charAt(i));
                     isString = true;
                     ++i;
@@ -242,25 +245,25 @@ public class Lexer {
                     break;
 
                 // operators
-                case TokenState.STATE.ARITH_OP:
+                case STATE.ARITH_OP:
                     addOperations(String.valueOf(lexemes.charAt(i)), lineToken); break;
-                case TokenState.STATE.MINUS:
+                case STATE.MINUS:
                     if (lexemes.charAt(i+1) == '-'){
-                        lineToken.add(new Token(TokenType.COMMENT, lexemes.substring(i)));
+                        lineToken.add(new Token(COMMENT, lexemes.substring(i)));
                         return;
                     }
                     addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
-                case TokenState.STATE.GT:
+                case STATE.GT:
                     if (lexemes.charAt(i+1) == '>' ||lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
 
                     else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
-                case TokenState.STATE.LT:
+                case STATE.LT:
                     if (lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
                     else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
-                case TokenState.STATE.EQUALS:
+                case STATE.EQUALS:
                     if (lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
                     else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
@@ -286,15 +289,15 @@ public class Lexer {
 
         switch (lexeme){
             case "UG":
-                lineToken.add(new Token(TokenType.LOG_AND, lexeme));
+                lineToken.add(new Token(LOG_AND, lexeme));
                 foundType = true;
                 break;
             case "O":
-                lineToken.add(new Token(TokenType.LOG_OR, lexeme));
+                lineToken.add(new Token(LOG_OR, lexeme));
                 foundType = true;
                 break;
             case "DILI":
-                lineToken.add(new Token(TokenType.LOG_NOT, lexeme));
+                lineToken.add(new Token(LOG_NOT, lexeme));
                 foundType = true;
                 break;
         }
@@ -312,11 +315,11 @@ public class Lexer {
 
         if (!foundType) {
             if (isEscape) {
-                lineToken.add(new Token(TokenType.ESCAPE_CODE, lexeme));
+                lineToken.add(new Token(ESCAPE_CODE, lexeme));
                 str.setLength(0);
                 return;
             }
-            lineToken.add(new Token(TokenType.IDENTIFIER, lexeme)); //if variable
+            lineToken.add(new Token(IDENTIFIER, lexeme)); //if variable
             str.setLength(0);
             return;
         }
@@ -324,43 +327,43 @@ public class Lexer {
     }
 
     private void addOperations(String token, List<Token> lineToken){
-        TokenType type = TokenType.NONE;
+        TokenType type = NONE;
         switch (token){
             //arithmetic
             case "+":
-                type = TokenType.ARITH_ADD; break;
+                type = ARITH_ADD; break;
             case "-":
-                type = TokenType.ARITH_MINUS; break;
+                type = ARITH_MINUS; break;
             case "*":
-                type = TokenType.ARITH_MULT; break;
+                type = ARITH_MULT; break;
             case "/":
-                type = TokenType.ARITH_DIV; break;
+                type = ARITH_DIV; break;
             case "%":
-                type = TokenType.ARITH_MOD; break;
+                type = ARITH_MOD; break;
             case "(":
-                type = TokenType.ARITH_OPEN_P; break;
+                type = ARITH_OPEN_P; break;
             case ")":
-                type = TokenType.ARITH_CLOSE_P; break;
+                type = ARITH_CLOSE_P; break;
 
             // relational
             case ">":
-                type = TokenType.ARITH_GT; break;
+                type = ARITH_GT; break;
             case ">=":
-                type = TokenType.ARITH_GOE; break;
+                type = ARITH_GOE; break;
             case "<":
-                type = TokenType.ARITH_LT; break;
+                type = ARITH_LT; break;
             case "<=":
-                type = TokenType.ARITH_LOE; break;
+                type = ARITH_LOE; break;
             case "<>":
-                type = TokenType.ARITH_NOT_EQUAL; break;
+                type = ARITH_NOT_EQUAL; break;
             case "==":
-                type = TokenType.ARITH_EQUAL; break;
+                type = ARITH_EQUAL; break;
 
             // assignment operation
             case "=":
-                type = TokenType.ASS_OP; break;
+                type = ASS_OP; break;
         }
-        if (type == TokenType.NONE) throw new IllegalArgumentException("Not an operator");
+        if (type == NONE) throw new IllegalArgumentException("Not an operator");
         lineToken.add(new Token(type, String.valueOf(token)));
     }
 
@@ -375,7 +378,7 @@ public class Lexer {
     private void checkIO(String lexeme, List<Token> lineToken){
         if (lexeme.endsWith(":")) {
             lineToken.add(new Token(KEYWORDS.get(lexeme.contains("IPAKITA") ? "IPAKITA" : "DAWAT"), lexeme.substring(0, lexeme.length() - 1)));
-            lineToken.add(new Token(TokenType.COLON, lexeme.substring(lexeme.length()-1)));
+            lineToken.add(new Token(COLON, lexeme.substring(lexeme.length()-1)));
         }
         else throw new IllegalArgumentException("Sayop: Imo gipasabot ba kay " + (lexeme.contains("IPAKITA") ? "IPAKITA" : "DAWAT") + "?");
     }
