@@ -17,14 +17,16 @@
 
     < data_type >           ->      "NUMERO" | "lETRA" | "TIPIK" | "TINUOD" | "PISI"
 
-    < expression >          ->      < literal >              |
-                                    IDENTIFIER               |
+    < expression >          ->      < primary >              |
                                     < unary_expression >     |
                                     < binary_operation >     |
+                                    < compare_operation >    |
                                     < compare_operation >    |
                                     < logic_operation >      |
                                     < group_expression >     |
                                     < assign >
+
+    < primary >             ->      < literal > | IDENTIFIERS
 
     < assign >              ->      IDENTIFIER ASSIGN_OP ( < assign > | < expression >)
 
@@ -51,3 +53,32 @@
     < input_statement >     ->      INPUT COLON IDENTIFIER (COMMA IDENTIFIER)*
 
 */
+
+// for code in Parser class sa expression na part
+// si expression man ang libog
+// di kaybaw mu express og tarong
+< expression >          ->      < assignment >
+
+< assignment >          ->      < logical_or >
+                                ( IDENTIFIER ASSIGN_OP < value > ) ?
+
+< value >               ->      < assignment >
+
+< logical_or >          ->      < logical_and > ( OR < logical_and > )*
+
+< logical_and >         ->      < equal > ( AND < equal > )*
+
+< equal >               ->      < comparison > ( ( == | <> ) < comparison > ) *
+
+< comparison >          ->      < term > ( ( GT | LT | GOE | LOE ) < term >)*
+
+< term >                ->      < factor >  ( ( ADD | MINUS ) < factor > )*
+
+< factor >              ->      < unary > ( ( MULT | DIV | MOD ) < unary > )*
+
+< unary >               ->      ( ( ADD | MINUS | LOG_NOT ) < unary > )?
+                                < primary >
+
+< primary >             ->      < literal >     |
+                                IDENTIFIER      |
+                                OPEN_P < expression > CLOSE_P
