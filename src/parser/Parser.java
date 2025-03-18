@@ -12,6 +12,13 @@ import static lexer.TokenType.*;
 // we meet again
 // akala ko graduate na ako sayo, pero hindi pa pala
 
+
+/*
+    TODO:
+        - disregard/skip comments
+        - tanaw output
+*/
+
 public class Parser {
     private final List<List<Token>> lineTokens;
     private int line;
@@ -45,6 +52,9 @@ public class Parser {
         for (int i = 1; i < size; i++) {
             statements.add(statement(lineTokens.get(i)));
             indx = 0;   //reset to 0 if mana nag read ang usa ka line
+            System.out.println("Successful parsed line " + lineTokens.get(i).getFirst().getLine());
+
+            System.out.println(new ASTPrinter().printStatement(statements.get(i-1)));
         }
 
         return statements;
@@ -68,23 +78,43 @@ public class Parser {
 
     private Statement varDeclare(List<Token> tokens){
         Token dataType = consume(currToken(tokens), DATA_TYPE, "Walay Data Type");
+        nextToken(tokens);
         Expression initialzer = expression(tokens);
-        return new Statement.VarDeclaration(dataType, initialzer);
+
+        Statement stmt = new Statement.VarDeclaration(dataType, initialzer);
+
+        return stmt;
     }
 
     private Statement outputStatement(List<Token> tokens){
-        if (currToken(tokens).getType() == COLON)  return new Statement.Output(expression(tokens));       // sure sd ka na expression ang naa dire? omg nimo giiirl
+        if (currToken(tokens).getType() == COLON) {
+            nextToken(tokens);
+            Expression expr = expression(tokens);
+            Statement stmt = new Statement.Output(expr);
+
+            return stmt;
+        }       // sure sd ka na expression ang naa dire? omg nimo giiirl
         throw new RuntimeException("Missing ':' after " + tokens.getFirst());
     }
 
     private Statement inputStatement(List<Token> tokens){
-        if (currToken(tokens).getType() == COLON)  return new Statement.Input(expression(tokens));        //sure ka na expression ni dire girl?
+        if (currToken(tokens).getType() == COLON) {
+            nextToken(tokens);
+            Expression expr = expression(tokens);
+            Statement stmt = new Statement.Input(expr);
+
+            return stmt;
+        }        //sure ka na expression ni dire girl?
         throw new RuntimeException("Missing ':' after " + tokens.getFirst());
     }
 
     // < expr_statement >   -> < expression >
     private Statement exprStatement (List<Token> tokens){
-        return new Statement.Expr(expression(tokens));
+
+        Expression expr = expression(tokens);
+        Statement stmt = new Statement.Expr(expr);
+
+        return stmt;
     }
 
     // < expression >       -> < literal >             |
@@ -99,6 +129,9 @@ public class Parser {
     }
 
     private Expression assignment(List<Token> tokens){
+
+//        System.out.println(currToken(tokens));
+
         Expression expr = logicalOr(tokens);
 
         if (
@@ -114,6 +147,9 @@ public class Parser {
     }
 
     private Expression logicalOr(List<Token> tokens){
+
+//        System.out.println(currToken(tokens));
+
         Expression expr = logicalAnd(tokens);
 
         while (
@@ -130,6 +166,9 @@ public class Parser {
     }
 
     private Expression logicalAnd(List<Token> tokens){
+
+//        System.out.println(currToken(tokens));
+
         Expression expr = equality(tokens);
 
         while (
@@ -146,6 +185,9 @@ public class Parser {
     }
 
     private Expression equality(List<Token> tokens){
+
+//        System.out.println(currToken(tokens));
+
         Expression expr = comparison(tokens);
 
         while (
@@ -163,6 +205,9 @@ public class Parser {
     }
 
     private Expression comparison (List<Token> tokens){
+
+//        System.out.println(currToken(tokens));
+
         Expression expr = term(tokens);
 
         while (
@@ -182,11 +227,15 @@ public class Parser {
     }
 
     private Expression term (List<Token> tokens){
+
+//        System.out.println(currToken(tokens));
+
         Expression expr = factor(tokens);
 
         while (
-                currToken(tokens).getType() == ARITH_ADD ||
-                currToken(tokens).getType() == ARITH_MINUS
+                currToken(tokens).getType() == ARITH_ADD    ||
+                currToken(tokens).getType() == ARITH_MINUS  ||
+                currToken(tokens).getType() == CONCAT       // para string
         ){
             Token op = currToken(tokens);
             nextToken(tokens);
@@ -199,6 +248,9 @@ public class Parser {
     }
 
     private Expression factor(List<Token> tokens){
+
+//        System.out.println(currToken(tokens));
+
         Expression expr = unary(tokens);
 
         while (
@@ -217,6 +269,9 @@ public class Parser {
     }
 
     private Expression unary(List<Token> tokens){
+
+//        System.out.println(currToken(tokens));
+
         if (
                 currToken(tokens).getType() == ARITH_ADD ||
                 currToken(tokens).getType() == ARITH_MINUS ||
@@ -224,6 +279,7 @@ public class Parser {
         ){
             Token op = currToken(tokens);
             nextToken(tokens);
+            System.out.println(currToken(tokens));
             Expression right = unary(tokens);
             return new Expression.Unary(op, right);
         }
@@ -232,6 +288,15 @@ public class Parser {
     }
 
     private Expression primary(List<Token> tokens){
+
+//        if (currToken(tokens).getType() == COMMENT)
+        // aaaa basta comment oiii TTOTT
+        // nya naa pay print na expression
+        // naa pay dawat na expression
+        // note na ang dawat na expression kay dili mag sugod sa expression na method TTOTT
+        // intawn variables rana si DAWAT, separated by comma
+
+//        System.out.println( "primary: " + currToken(tokens));
 
         Expression expr;
 
@@ -259,6 +324,7 @@ public class Parser {
                 if (currToken(tokens).getType() != ARITH_CLOSE_P) throw new RuntimeException("Expected ')' after expression.");
                 nextToken(tokens);
                 return new Expression.Group(expr);
+
         }
 
         throw new RuntimeException("Expected expression.");
@@ -269,7 +335,7 @@ public class Parser {
     }
 
     private Token currToken (List<Token> tokens){
-        return indx  > tokens.size() ? tokens.get(indx) : tokens.get(tokens.size()-1);
+        return indx < tokens.size() ? tokens.get(indx) : tokens.get(tokens.size()-1);
     }
 
     private Token prevToken (List<Token> tokens){
