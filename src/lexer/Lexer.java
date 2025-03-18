@@ -109,6 +109,7 @@ public class Lexer {
             switch (lexeme) {
                 case "SUGOD":
                     lineToken.add(new Token(START_PROG, lexeme));
+                    break;
                 case "KATAPUSAN":
                     lineToken.add(new Token(END_PROG, lexeme));
                     break;
