@@ -48,14 +48,26 @@ public class Parser {
 
         //dire rako kutob eh
         List<Statement> statements = new ArrayList<>();
-
+        List<Token> currLine;
         for (int i = 1; i < size; i++) {
-            statements.add(statement(lineTokens.get(i)));
-            indx = 0;   //reset to 0 if mana nag read ang usa ka line
-            System.out.println("Successful parsed line " + lineTokens.get(i).getFirst().getLine());
 
-            System.out.println(new ASTPrinter().printStatement(statements.get(i-1)));
+            currLine = lineTokens.get(i);
+
+            if (currToken(currLine).getType() == VAR_DECLARATION) {
+                nextToken(currLine);
+                List<Statement> declaration;
+                declaration = varDeclare(currLine);
+                statements.addAll(declaration);
+            } else statements.add(statement(currLine));
+
+            indx = 0;   //reset to 0 if mana nag read ang usa ka line
+            System.out.println("Successful parsed line " + currLine.getFirst().getLine());
+
+//            System.out.println(new ASTPrinter().printStatement(statements.get(i-1)));
+//            System.out.println();
         }
+        System.out.println();
+        for (Statement s : statements) System.out.println(new ASTPrinter().printStatement(s) + '\n');
 
         return statements;
     }
@@ -68,53 +80,72 @@ public class Parser {
             case INPUT:
                 nextToken(tokens);
                 return inputStatement(tokens);
-            case VAR_DECLARATION:
-                nextToken(tokens);
-                return varDeclare(tokens);
             default:
                 return exprStatement(tokens);
         }
     }
 
-    private Statement varDeclare(List<Token> tokens){
-        Token dataType = consume(currToken(tokens), DATA_TYPE, "Walay Data Type");
+    private List<Statement> varDeclare(List<Token> tokens){
+        Token dataType = null;
+        if (consume(currToken(tokens), DATA_TYPE, "Walay Data Type at line " + currToken(tokens).getLine())) dataType = currToken(tokens);
         nextToken(tokens);
-        Expression initialzer = expression(tokens);
 
-        Statement stmt = new Statement.VarDeclaration(dataType, initialzer);
+        List<Statement> declaration = new ArrayList<>();
+        boolean expectNext = false;
 
-        return stmt;
+        if (consume(currToken(tokens), IDENTIFIER, "Walay variable name at line " + currToken(tokens).getLine())) {
+            while (currToken(tokens).getType() == IDENTIFIER) {
+                Expression initialzer = expression(tokens);
+                declaration.add(new Statement.VarDeclaration(dataType, initialzer));
+                if (currToken(tokens).getType() == COMMA) {
+                    nextToken(tokens);
+                    expectNext = true;
+                } else {
+                    expectNext = false;
+                    break;
+                }
+            }
+        }
+
+        if (expectNext) consume(currToken(tokens), IDENTIFIER, "Walay variable name human sa , at line " + currToken(tokens).getLine());
+
+        return declaration;
     }
 
     private Statement outputStatement(List<Token> tokens){
-        if (currToken(tokens).getType() == COLON) {
+//        if (currToken(tokens).getType() == COLON) {
+            consume(currToken(tokens), COLON, "Walay ':' human sa " + prevToken(tokens) + " at line " + currToken(tokens).getLine());
             nextToken(tokens);
             Expression expr = expression(tokens);
-            Statement stmt = new Statement.Output(expr);
-
-            return stmt;
-        }       // sure sd ka na expression ang naa dire? omg nimo giiirl
-        throw new RuntimeException("Missing ':' after " + tokens.getFirst());
+            return new Statement.Output(expr);
+//        }
+//        throw new RuntimeException("Missing ':' after " + tokens.getFirst());
     }
 
     private Statement inputStatement(List<Token> tokens){
-        if (currToken(tokens).getType() == COLON) {
+//        if (currToken(tokens).getType() == COLON) {
+        /*
+            TODO:
+                - modify this code where it will accept multiple variables
+                - posibly change the class Input(tokens/variables)
+        */
+            consume(currToken(tokens), COLON, "Walay ':' human sa " + prevToken(tokens) + " at line " + currToken(tokens).getLine());
             nextToken(tokens);
             Expression expr = expression(tokens);
-            Statement stmt = new Statement.Input(expr);
-
-            return stmt;
-        }        //sure ka na expression ni dire girl?
-        throw new RuntimeException("Missing ':' after " + tokens.getFirst());
+            return new Statement.Input(expr);
+//        }        //sure ka na expression ni dire girl?
+//        throw new RuntimeException("Missing ':' after " + tokens.getFirst());
     }
 
     // < expr_statement >   -> < expression >
     private Statement exprStatement (List<Token> tokens){
-
+        /*
+        modify this where it will handle statements like
+            x
+        it should not be accepted kay variable ra ang gi butang
+        */
         Expression expr = expression(tokens);
-        Statement stmt = new Statement.Expr(expr);
-
-        return stmt;
+        return new Statement.Expr(expr);
     }
 
     // < expression >       -> < literal >             |
@@ -135,8 +166,8 @@ public class Parser {
         Expression expr = logicalOr(tokens);
 
         if (
-                currToken(tokens).getType() == IDENTIFIER &&
-                nextToken(tokens).getType() == ASS_OP
+                expr instanceof Expression.Variable &&
+                currToken(tokens).getType() == ASS_OP
         ){
             Token var = prevToken(tokens);
             nextToken(tokens);
@@ -158,7 +189,7 @@ public class Parser {
             Token op = currToken(tokens);
             nextToken(tokens);
             Expression right = logicalAnd(tokens);
-            nextToken(tokens);
+//            nextToken(tokens);
             expr = new Expression.Binary(expr, op, right);
         }
 
@@ -177,7 +208,7 @@ public class Parser {
             Token op = currToken(tokens);
             nextToken(tokens);
             Expression right = equality(tokens);
-            nextToken(tokens);
+//            nextToken(tokens);
             expr = new Expression.Logic(expr, op, right);
         }
 
@@ -197,7 +228,7 @@ public class Parser {
             Token op = currToken(tokens);
             nextToken(tokens);
             Expression right = comparison(tokens);
-            nextToken(tokens);
+//            nextToken(tokens);
             expr = new Expression.Compare(expr, op, right);
         }
 
@@ -219,7 +250,7 @@ public class Parser {
             Token op = currToken(tokens);
             nextToken(tokens);
             Expression right = term(tokens);
-            nextToken(tokens);
+//            nextToken(tokens);
             expr = new Expression.Compare(expr, op, right);
         }
 
@@ -240,7 +271,7 @@ public class Parser {
             Token op = currToken(tokens);
             nextToken(tokens);
             Expression right = factor(tokens);
-            nextToken(tokens);
+//            nextToken(tokens);
             expr = new Expression.Binary(expr, op, right);
         }
 
@@ -261,7 +292,7 @@ public class Parser {
             Token op = currToken(tokens);
             nextToken(tokens);
             Expression right = unary(tokens);
-            nextToken(tokens);
+//            nextToken(tokens);
             expr = new Expression.Binary(expr, op, right);
         }
 
@@ -307,7 +338,8 @@ public class Parser {
             case BOOLEAN:
             case CHARACTERS:
             case STRING:
-                expr = new Expression.Literal(currToken(tokens));
+            case NEW_LINE:
+                expr = new Expression.Literal(currToken(tokens).getValue(), currToken(tokens).getType());
                 nextToken(tokens);
                 return expr;
 
@@ -342,9 +374,9 @@ public class Parser {
         return tokens.get(indx-1);
     }
 
-    private Token consume(Token curr, TokenType type, String error){
+    private boolean consume(Token curr, TokenType type, String error){
         if (curr == null) throw new IllegalArgumentException(error);
-        if (curr.getType() == type) return curr;
+        if (curr.getType() == type) return true;
         throw new IllegalArgumentException(error);
     }
 

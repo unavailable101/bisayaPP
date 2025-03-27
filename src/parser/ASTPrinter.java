@@ -58,7 +58,7 @@ public class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor
     @Override
     public String visitLiteral(Expression.Literal expression) {
         if (expression.literal == null) return "nil";
-        return expression.literal.getValue().toString();
+        return expression.literal.toString();
     }
 
     @Override

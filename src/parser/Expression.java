@@ -1,6 +1,7 @@
 package parser;
 
 import lexer.Token;
+import lexer.TokenType;
 
 public abstract class Expression {
 
@@ -89,10 +90,12 @@ public abstract class Expression {
     // < expression >   -> < literal >
     // < literal >        -> INTEGER | DOUBLE | STRING | CHARACTERS | BOOLEAN
     static class Literal extends Expression{
-        final Token literal;
+        final Object literal;
+        final TokenType type;
 
-        public Literal(Token literal) {
+        public Literal(Object literal, TokenType type) {
             this.literal = literal;
+            this.type = type;
         }
 
         @Override
