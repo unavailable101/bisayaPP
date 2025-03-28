@@ -7,7 +7,7 @@ public abstract class Expression {
 
     abstract <R> R accept (Visitor<R> visitor);
 
-    interface Visitor<R>{
+    public interface Visitor<R>{
         R visitUnary(Unary expression);
         R visitBinary(Binary expression);
         R visitLogic(Logic expression);
@@ -19,7 +19,7 @@ public abstract class Expression {
     }
     // < expression >   -> < unaru >
     // < unary >        -> ( ADD | MINUS) ( < literal > | IDENTIFIER )
-    static class Unary extends Expression{
+    public static class Unary extends Expression{
         final Token op;
         final Expression right;
 
@@ -37,7 +37,7 @@ public abstract class Expression {
     // < expression >           -> < binary_operation >
     // < binary_operation >     -> < expression > < operator >  < expression >
     // < operator >             -> ADD | MINUS | MULT | DIV | MOD | GT | LT | GOE | LOE | EQUAL | NOT_EQUAL
-    static class Binary extends Expression{
+    public static class Binary extends Expression{
         final Expression left, right;
         final Token operator;
 
@@ -56,7 +56,7 @@ public abstract class Expression {
     // < expression >           -> < logic_operation >
     // < logic_operation >      -> < expression > < logic_operators >  < expression >
     // < logic_operators >      -> AND | OR | NOT
-    static class Logic extends Expression{
+    public static class Logic extends Expression{
         final Expression left, right;
         final Token logic_op;
 
@@ -74,7 +74,7 @@ public abstract class Expression {
 
     // < expression >   -> < group >
     // < group >        -> OPEN_P < expression > CLOSE_P
-    static class Group extends Expression{
+    public static class Group extends Expression{
         final Expression expression;
 
         public Group(Expression expression) {
@@ -89,7 +89,7 @@ public abstract class Expression {
 
     // < expression >   -> < literal >
     // < literal >        -> INTEGER | DOUBLE | STRING | CHARACTERS | BOOLEAN
-    static class Literal extends Expression{
+    public static class Literal extends Expression{
         final Object literal;
         final TokenType type;
 
@@ -106,7 +106,7 @@ public abstract class Expression {
 
     // < expression >   -> < assign >
     // < assign >    -> IDENTIFIER ASSIGN_OP ( < assign > | < expression >)
-    static class Assign extends Expression{
+    public static class Assign extends Expression{
         final Token name;
         final Expression expression;    // or value
 
@@ -122,7 +122,7 @@ public abstract class Expression {
     }
 
     // < expression > -> IDENTIFIER
-    static class Variable extends Expression{
+    public static class Variable extends Expression{
         final Token name;
 
         public Variable(Token name) {
@@ -135,7 +135,7 @@ public abstract class Expression {
         }
     }
 
-    static class Compare extends Expression{
+    public static class Compare extends Expression{
         final Expression left, right;
         final Token op;
 
