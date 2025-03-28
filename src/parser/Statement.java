@@ -45,9 +45,9 @@ public abstract class Statement {
     // < statement >            ->  < input_statement >
     // < input_statement >     ->  INPUT COLON IDENTIFIER (COMMA IDENTIFIER)*
     static class Input extends Statement{
-        final Expression variables;
-        public Input (Expression variables) {
-            this.variables = variables;
+        final Token variable;
+        public Input (Token variable) {
+            this.variable = variable;
         }
 
         @Override

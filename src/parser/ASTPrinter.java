@@ -78,18 +78,18 @@ public class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor
 
     @Override
     public String visitExpr(Statement.Expr statement) {
-        return parenthesizeStmt("Statement expression", printExpr(statement.expression));
+        return parenthesizeStmt("Statement expression: ", printExpr(statement.expression));
     }
 
     @Override
     public String visitOutput(Statement.Output statement) {
-        return parenthesizeStmt("Statement output", printExpr(statement.expression));
+        return parenthesizeStmt("Statement output: ", printExpr(statement.expression));
     }
 
     @Override
     public String visitInput(Statement.Input statement) {
         // Assuming Input statement has an expression field like Output
-        return parenthesizeStmt("Statement input", printExpr(statement.variables));
+        return parenthesizeStmt("Statement input: ", statement.variable.getValue().toString());
     }
 
     @Override

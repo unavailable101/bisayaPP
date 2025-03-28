@@ -13,20 +13,17 @@ import static lexer.TokenType.*;
 // akala ko graduate na ako sayo, pero hindi pa pala
 
 
-/*
-    TODO:
-        - disregard/skip comments
-        - tanaw output
-*/
-
 public class Parser {
     private final List<List<Token>> lineTokens;
     private int line;
     int indx = 0;
 
+    private final List<Statement> statements;
+
     public Parser(List<List<Token>> lineTokens) {
         this.lineTokens = lineTokens;
         this.line = -1;
+        this.statements = new ArrayList<>();
     }
 
     public List<Statement> parse(){
@@ -46,42 +43,41 @@ public class Parser {
             throw new IllegalArgumentException("Expected 'KATAPUSAN' after line " + lineTokens.getLast().getLast().getLine());
         else size = lineTokens.size()-1;
 
-        //dire rako kutob eh
-        List<Statement> statements = new ArrayList<>();
         List<Token> currLine;
+        int cl = 0;
         for (int i = 1; i < size; i++) {
-
             currLine = lineTokens.get(i);
-
-            if (currToken(currLine).getType() == VAR_DECLARATION) {
-                nextToken(currLine);
-                List<Statement> declaration;
-                declaration = varDeclare(currLine);
-                statements.addAll(declaration);
-            } else statements.add(statement(currLine));
-
+            statement(currLine);
             indx = 0;   //reset to 0 if mana nag read ang usa ka line
             System.out.println("Successful parsed line " + currLine.getFirst().getLine());
 
-//            System.out.println(new ASTPrinter().printStatement(statements.get(i-1)));
-//            System.out.println();
+            while (cl < statements.size()){
+                System.out.println(new ASTPrinter().printStatement(statements.get(cl)));
+                cl++;
+            }
+            System.out.println();
+
         }
-        System.out.println();
-        for (Statement s : statements) System.out.println(new ASTPrinter().printStatement(s) + '\n');
 
         return statements;
     }
 
-    private Statement statement(List<Token> tokens){
+    private void statement(List<Token> tokens){
         switch (currToken(tokens).getType()){
+            case VAR_DECLARATION:
+                nextToken(tokens);
+                statements.addAll(varDeclare(tokens));
+                break;
             case OUTPUT:
                 nextToken(tokens);
-                return outputStatement(tokens);
+                statements.add(outputStatement(tokens));
+                break;
             case INPUT:
                 nextToken(tokens);
-                return inputStatement(tokens);
+                statements.addAll(inputStatement(tokens));
+                break;
             default:
-                return exprStatement(tokens);
+                statements.add(exprStatement(tokens));
         }
     }
 
@@ -93,17 +89,17 @@ public class Parser {
         List<Statement> declaration = new ArrayList<>();
         boolean expectNext = false;
 
-        if (consume(currToken(tokens), IDENTIFIER, "Walay variable name at line " + currToken(tokens).getLine())) {
-            while (currToken(tokens).getType() == IDENTIFIER) {
-                Expression initialzer = expression(tokens);
-                declaration.add(new Statement.VarDeclaration(dataType, initialzer));
-                if (currToken(tokens).getType() == COMMA) {
-                    nextToken(tokens);
-                    expectNext = true;
-                } else {
-                    expectNext = false;
-                    break;
-                }
+        consume(currToken(tokens), IDENTIFIER, "Walay variable name at line " + currToken(tokens).getLine());
+
+        while (currToken(tokens).getType() == IDENTIFIER) {
+            Expression initialzer = expression(tokens);
+            declaration.add(new Statement.VarDeclaration(dataType, initialzer));
+            if (currToken(tokens).getType() == COMMA) {
+                nextToken(tokens);
+                expectNext = true;
+            } else {
+                expectNext = false;
+                break;
             }
         }
 
@@ -122,19 +118,24 @@ public class Parser {
 //        throw new RuntimeException("Missing ':' after " + tokens.getFirst());
     }
 
-    private Statement inputStatement(List<Token> tokens){
-//        if (currToken(tokens).getType() == COLON) {
-        /*
-            TODO:
-                - modify this code where it will accept multiple variables
-                - posibly change the class Input(tokens/variables)
-        */
+    private List<Statement> inputStatement(List<Token> tokens){
             consume(currToken(tokens), COLON, "Walay ':' human sa " + prevToken(tokens) + " at line " + currToken(tokens).getLine());
+
             nextToken(tokens);
-            Expression expr = expression(tokens);
-            return new Statement.Input(expr);
-//        }        //sure ka na expression ni dire girl?
-//        throw new RuntimeException("Missing ':' after " + tokens.getFirst());
+            List<Statement> inputs = new ArrayList<>();
+            boolean expectNext = false;
+
+//                Expression expr = expression(tokens);
+            while (true) {
+                consume(currToken(tokens), IDENTIFIER, "Walay variable para input at line " + currToken(tokens).getLine());
+                inputs.add(new Statement.Input(currToken(tokens)));
+                nextToken(tokens);
+                if (currToken(tokens).getType() == COMMA) nextToken(tokens);
+                else break;
+            }
+
+//            if (expectNext) consume(currToken(tokens), IDENTIFIER, "Walay variable human sa , at line " + currToken(tokens).getLine());
+            return inputs;
     }
 
     // < expr_statement >   -> < expression >
