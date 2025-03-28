@@ -181,7 +181,7 @@ public class Parser {
             nextToken(tokens);
             Expression right = logicalAnd(tokens);
 //            nextToken(tokens);
-            expr = new Expression.Binary(expr, op, right);
+            expr = new Expression.Logic(expr, op, right);
         }
 
         return expr;
@@ -285,7 +285,7 @@ public class Parser {
         if (
                 currToken(tokens).getType() == ARITH_ADD ||
                 currToken(tokens).getType() == ARITH_MINUS ||
-                currToken(tokens).getType() == LOG_AND
+                currToken(tokens).getType() == LOG_NOT
         ){
             Token op = currToken(tokens);
             nextToken(tokens);
