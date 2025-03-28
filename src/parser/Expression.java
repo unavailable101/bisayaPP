@@ -5,7 +5,7 @@ import lexer.TokenType;
 
 public abstract class Expression {
 
-    abstract <R> R accept (Visitor<R> visitor);
+    public abstract <R> R accept(Visitor<R> visitor);
 
     public interface Visitor<R>{
         R visitUnary(Unary expression);
@@ -20,8 +20,8 @@ public abstract class Expression {
     // < expression >   -> < unaru >
     // < unary >        -> ( ADD | MINUS) ( < literal > | IDENTIFIER )
     public static class Unary extends Expression{
-        final Token op;
-        final Expression right;
+        public final Token op;
+        public final Expression right;
 
         public Unary(Token op, Expression right) {
             this.op = op;
@@ -29,7 +29,7 @@ public abstract class Expression {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitUnary(this);
         }
     }
@@ -38,8 +38,8 @@ public abstract class Expression {
     // < binary_operation >     -> < expression > < operator >  < expression >
     // < operator >             -> ADD | MINUS | MULT | DIV | MOD | GT | LT | GOE | LOE | EQUAL | NOT_EQUAL
     public static class Binary extends Expression{
-        final Expression left, right;
-        final Token operator;
+        public final Expression left, right;
+        public final Token operator;
 
         public Binary(Expression left, Token operator, Expression right) {
             this.left = left;
@@ -48,7 +48,7 @@ public abstract class Expression {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitBinary(this);
         }
     }
@@ -57,8 +57,8 @@ public abstract class Expression {
     // < logic_operation >      -> < expression > < logic_operators >  < expression >
     // < logic_operators >      -> AND | OR | NOT
     public static class Logic extends Expression{
-        final Expression left, right;
-        final Token logic_op;
+        public final Expression left, right;
+        public final Token logic_op;
 
         public Logic(Expression left, Token logic_op, Expression right) {
             this.left = left;
@@ -67,7 +67,7 @@ public abstract class Expression {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitLogic(this);
         }
     }
@@ -75,14 +75,14 @@ public abstract class Expression {
     // < expression >   -> < group >
     // < group >        -> OPEN_P < expression > CLOSE_P
     public static class Group extends Expression{
-        final Expression expression;
+        public final Expression expression;
 
         public Group(Expression expression) {
             this.expression = expression;
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitGroup(this);
         }
     }
@@ -90,8 +90,8 @@ public abstract class Expression {
     // < expression >   -> < literal >
     // < literal >        -> INTEGER | DOUBLE | STRING | CHARACTERS | BOOLEAN
     public static class Literal extends Expression{
-        final Object literal;
-        final TokenType type;
+        public final Object literal;
+        public final TokenType type;
 
         public Literal(Object literal, TokenType type) {
             this.literal = literal;
@@ -99,7 +99,7 @@ public abstract class Expression {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitLiteral(this);
         }
     }
@@ -107,8 +107,8 @@ public abstract class Expression {
     // < expression >   -> < assign >
     // < assign >    -> IDENTIFIER ASSIGN_OP ( < assign > | < expression >)
     public static class Assign extends Expression{
-        final Token name;
-        final Expression expression;    // or value
+        public final Token name;
+        public final Expression expression;    // or value
 
         public Assign(Token name, Expression expression) {
             this.name = name;
@@ -116,28 +116,28 @@ public abstract class Expression {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitAssign(this);
         }
     }
 
     // < expression > -> IDENTIFIER
     public static class Variable extends Expression{
-        final Token name;
+        public final Token name;
 
         public Variable(Token name) {
             this.name = name;
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitVariable(this);
         }
     }
 
     public static class Compare extends Expression{
-        final Expression left, right;
-        final Token op;
+        public final Expression left, right;
+        public final Token op;
 
         public Compare(Expression left, Token op, Expression right) {
             this.left = left;
@@ -146,7 +146,7 @@ public abstract class Expression {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitCompare(this);
         }
     }
