@@ -4,9 +4,18 @@ import lexer.TokenType;
 import parser.Expression;
 import parser.Statement;
 
+import java.util.List;
+
 import static lexer.TokenType.*;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
+
+    public void interpret (List<Statement> statements){
+        // dire sha mag kuha(?) sa mga ano, mga statements then iya i pasa to idk
+        // iterate bha daaaaaaa kapoy
+        // mag read sha each statements then i pasa to another funtcion then gauuur
+    }
+
     @Override
     public Object visitUnary(Expression.Unary expression) {
         Object right = expression.right;
