@@ -109,13 +109,11 @@ public class Parser {
     }
 
     private Statement outputStatement(List<Token> tokens){
-//        if (currToken(tokens).getType() == COLON) {
             consume(currToken(tokens), COLON, "Walay ':' human sa " + prevToken(tokens) + " at line " + currToken(tokens).getLine());
             nextToken(tokens);
             Expression expr = expression(tokens);
             return new Statement.Output(expr);
-//        }
-//        throw new RuntimeException("Missing ':' after " + tokens.getFirst());
+
     }
 
     private List<Statement> inputStatement(List<Token> tokens){
@@ -123,7 +121,6 @@ public class Parser {
 
             nextToken(tokens);
             List<Statement> inputs = new ArrayList<>();
-            boolean expectNext = false;
 
 //                Expression expr = expression(tokens);
             while (true) {
@@ -134,7 +131,6 @@ public class Parser {
                 else break;
             }
 
-//            if (expectNext) consume(currToken(tokens), IDENTIFIER, "Walay variable human sa , at line " + currToken(tokens).getLine());
             return inputs;
     }
 
@@ -162,25 +158,20 @@ public class Parser {
 
     private Expression assignment(List<Token> tokens){
 
-//        System.out.println(currToken(tokens));
-
         Expression expr = logicalOr(tokens);
 
-        if (
-                expr instanceof Expression.Variable &&
-                currToken(tokens).getType() == ASS_OP
-        ){
-            Token var = prevToken(tokens);
-            nextToken(tokens);
-            return new Expression.Assign(var, assignment(tokens));
+        if ( currToken(tokens).getType() == ASS_OP) {
+            if (expr instanceof Expression.Variable) {
+                Token var = prevToken(tokens);
+                nextToken(tokens);
+                return new Expression.Assign(var, assignment(tokens));
+            } else throw new IllegalArgumentException("Walay variable before '=' sa line " + currToken(tokens).getLine());
         }
 
         return expr;
     }
 
     private Expression logicalOr(List<Token> tokens){
-
-//        System.out.println(currToken(tokens));
 
         Expression expr = logicalAnd(tokens);
 
@@ -199,8 +190,6 @@ public class Parser {
 
     private Expression logicalAnd(List<Token> tokens){
 
-//        System.out.println(currToken(tokens));
-
         Expression expr = equality(tokens);
 
         while (
@@ -217,8 +206,6 @@ public class Parser {
     }
 
     private Expression equality(List<Token> tokens){
-
-//        System.out.println(currToken(tokens));
 
         Expression expr = comparison(tokens);
 
@@ -237,8 +224,6 @@ public class Parser {
     }
 
     private Expression comparison (List<Token> tokens){
-
-//        System.out.println(currToken(tokens));
 
         Expression expr = term(tokens);
 
@@ -260,8 +245,6 @@ public class Parser {
 
     private Expression term (List<Token> tokens){
 
-//        System.out.println(currToken(tokens));
-
         Expression expr = factor(tokens);
 
         while (
@@ -280,8 +263,6 @@ public class Parser {
     }
 
     private Expression factor(List<Token> tokens){
-
-//        System.out.println(currToken(tokens));
 
         Expression expr = unary(tokens);
 
@@ -302,8 +283,6 @@ public class Parser {
 
     private Expression unary(List<Token> tokens){
 
-//        System.out.println(currToken(tokens));
-
         if (
                 currToken(tokens).getType() == ARITH_ADD ||
                 currToken(tokens).getType() == ARITH_MINUS ||
@@ -311,7 +290,7 @@ public class Parser {
         ){
             Token op = currToken(tokens);
             nextToken(tokens);
-            System.out.println(currToken(tokens));
+//            System.out.println(currToken(tokens));
             Expression right = unary(tokens);
             return new Expression.Unary(op, right);
         }
@@ -321,18 +300,15 @@ public class Parser {
 
     private Expression primary(List<Token> tokens){
 
-//        if (currToken(tokens).getType() == COMMENT)
-        // aaaa basta comment oiii TTOTT
-        // nya naa pay print na expression
-        // naa pay dawat na expression
-        // note na ang dawat na expression kay dili mag sugod sa expression na method TTOTT
-        // intawn variables rana si DAWAT, separated by comma
-
-//        System.out.println( "primary: " + currToken(tokens));
-
         Expression expr;
 
         switch (currToken(tokens).getType()){
+            //variables
+            case IDENTIFIER:
+                expr = new Expression.Variable(currToken(tokens));
+                nextToken(tokens);
+                return expr;
+
             //literals
             case INTEGER:
             case DOUBLE:
@@ -341,12 +317,6 @@ public class Parser {
             case STRING:
             case NEW_LINE:
                 expr = new Expression.Literal(currToken(tokens).getValue(), currToken(tokens).getType());
-                nextToken(tokens);
-                return expr;
-
-            //variables
-            case IDENTIFIER:
-                expr = new Expression.Variable(currToken(tokens));
                 nextToken(tokens);
                 return expr;
 
