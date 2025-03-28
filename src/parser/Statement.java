@@ -8,14 +8,14 @@ public abstract class Statement {
 
     abstract <R> R accept (Visitor<R> visitor);
 
-    interface Visitor<R> {
+    public interface Visitor<R> {
         <R> R visitExpr(Expr statement);
         <R> R visitOutput(Output statement);
         <R> R visitInput(Input statement);
         <R> R visitVarDeclaration(VarDeclaration statement);
     }
     // < statement >    ->      < expr_statement >
-    static class Expr extends Statement {
+    public static class Expr extends Statement {
         final Expression expression;
 
         Expr(Expression expression){
@@ -30,7 +30,7 @@ public abstract class Statement {
 
     // < statement >            ->  < output_statement >
     // < output_statement >     ->  OUTPUT COLON < expression >
-    static class Output extends Statement{
+    public static class Output extends Statement{
         final Expression expression;
         public Output(Expression expression) {
             this.expression = expression;
@@ -44,7 +44,7 @@ public abstract class Statement {
 
     // < statement >            ->  < input_statement >
     // < input_statement >     ->  INPUT COLON IDENTIFIER (COMMA IDENTIFIER)*
-    static class Input extends Statement{
+    public static class Input extends Statement{
         final Token variable;
         public Input (Token variable) {
             this.variable = variable;
@@ -56,7 +56,7 @@ public abstract class Statement {
         }
     }
 
-    static class VarDeclaration extends Statement{
+    public static class VarDeclaration extends Statement{
         final Token type;
         final Expression initialization;
 //        final Variable var;

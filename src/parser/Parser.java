@@ -26,7 +26,7 @@ public class Parser {
         this.statements = new ArrayList<>();
     }
 
-    public List<Statement> parse(){
+    public void parse(){
 
         int size = 0;
 
@@ -59,7 +59,6 @@ public class Parser {
 
         }
 
-        return statements;
     }
 
     private void statement(List<Token> tokens){
