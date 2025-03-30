@@ -5,6 +5,7 @@ import parser.Expression;
 import parser.Statement;
 
 import java.util.List;
+import java.util.Scanner;
 
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
@@ -188,6 +189,13 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public <R> R visitInput(Statement.Input statement) {
+        Scanner sc = new Scanner(System.in);
+
+        String input = sc.nextLine();
+
+        Object value = inputType(input, env.getType(statement.variable.getValue().toString()).getValue().toString());
+        env.assign(statement.variable, value);
+
         return null;
     }
 
@@ -226,7 +234,9 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
         if (value instanceof Integer || value instanceof Double) return value.toString();
 
-        if (value instanceof Boolean || value instanceof String){
+        if (value instanceof Boolean) return (Boolean)value ? "OO" : "DILI";
+
+        if (value instanceof String){
             if (value.equals("$")) return "\n";
 
             String str = (String)value;
@@ -252,13 +262,30 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             case "PISI":
                 return value instanceof String;
             case "TINUOD":
-                return value instanceof String ?
-                    value.equals("\"OO\"") || value.equals("\"DILI\"") : false;
+//                return value instanceof String ?
+//                    value.equals("\"OO\"") || value.equals("\"DILI\"") : (Boolean)value;
+                return value instanceof Boolean;
             case "LETRA":
                 return true;
             default:
                 return false;
         }
+    }
+
+    private Object inputType (String input, String type){
+         switch (type){
+             case "NUMERO":
+                 return Integer.parseInt(input);
+             case "TIPIK":
+                 return Double.parseDouble(input);
+             case "PISI":
+                 return "\"" + input + "\"";
+             case "LETRA":
+                 if (input.length()!=1) throw new RuntimeException("usa ra ka character");
+                 return "'" + input + "'";
+             default:
+                 throw new RuntimeException("Wa ko kaila: ");
+         }
     }
 
 }
