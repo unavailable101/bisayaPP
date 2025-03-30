@@ -6,7 +6,7 @@ import java.util.List;
 
 public abstract class Statement {
 
-    abstract <R> R accept (Visitor<R> visitor);
+    public abstract <R> R accept(Visitor<R> visitor);
 
     public interface Visitor<R> {
         <R> R visitExpr(Expr statement);
@@ -16,14 +16,14 @@ public abstract class Statement {
     }
     // < statement >    ->      < expr_statement >
     public static class Expr extends Statement {
-        final Expression expression;
+        public final Expression expression;
 
         Expr(Expression expression){
             this.expression = expression;
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitExpr(this);
         }
     }
@@ -31,13 +31,13 @@ public abstract class Statement {
     // < statement >            ->  < output_statement >
     // < output_statement >     ->  OUTPUT COLON < expression >
     public static class Output extends Statement{
-        final Expression expression;
+        public final Expression expression;
         public Output(Expression expression) {
             this.expression = expression;
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitOutput(this);
         }
     }
@@ -45,20 +45,20 @@ public abstract class Statement {
     // < statement >            ->  < input_statement >
     // < input_statement >     ->  INPUT COLON IDENTIFIER (COMMA IDENTIFIER)*
     public static class Input extends Statement{
-        final Token variable;
+        public final Token variable;
         public Input (Token variable) {
             this.variable = variable;
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitInput(this);
         }
     }
 
     public static class VarDeclaration extends Statement{
-        final Token type;
-        final Expression initialization;
+        public final Token type;
+        public final Expression initialization;
 //        final Variable var;
 
         VarDeclaration(Token type, Expression initialization) {
@@ -68,7 +68,7 @@ public abstract class Statement {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        public <R> R accept(Visitor<R> visitor) {
             return visitor.visitVarDeclaration(this);
         }
     }
