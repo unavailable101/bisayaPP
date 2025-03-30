@@ -1,6 +1,7 @@
 package parser;
 
 import lexer.Token;
+import lexer.TokenType;
 
 import java.util.List;
 
@@ -58,13 +59,13 @@ public abstract class Statement {
 
     public static class VarDeclaration extends Statement{
         public final Token type;
+        public final Token var;
         public final Expression initialization;
-//        final Variable var;
 
-        VarDeclaration(Token type, Expression initialization) {
+        VarDeclaration(Token type, Token var, Expression initialization) {
             this.type = type;
+            this.var = var;
             this.initialization = initialization;
-//            this.var = var;
         }
 
         @Override

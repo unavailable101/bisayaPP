@@ -58,6 +58,7 @@ public class Parser {
             System.out.println();
 
         }
+        System.out.println("------------------ OUTPUT --------------------");
         return statements;
     }
 
@@ -91,8 +92,19 @@ public class Parser {
         consume(currToken(tokens), IDENTIFIER, "Walay variable name at line " + currToken(tokens).getLine());
 
         while (currToken(tokens).getType() == IDENTIFIER) {
-            Expression initialzer = expression(tokens);
-            declaration.add(new Statement.VarDeclaration(dataType, initialzer));
+
+            Token var = currToken(tokens);
+            nextToken(tokens);
+
+            Expression initialzer = null;
+
+            if(currToken(tokens).getType() == ASS_OP){
+                nextToken(tokens);
+                initialzer = expression(tokens);
+            }
+
+            declaration.add(new Statement.VarDeclaration(dataType, var, initialzer));
+
             if (currToken(tokens).getType() == COMMA) {
                 nextToken(tokens);
                 expectNext = true;

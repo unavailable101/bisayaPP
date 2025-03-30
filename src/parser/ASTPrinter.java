@@ -95,8 +95,8 @@ public class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor
     @Override
     public String visitVarDeclaration(Statement.VarDeclaration statement) {
         return parenthesizeStmt(
-                "Statement var declare type: " + statement.type.getValue().toString(),
-                printExpr(statement.initialization)
+                "Statement var declare type: " + statement.type.getValue().toString() + " " + statement.var.getValue().toString(),
+                statement.initialization!=null ? printExpr(statement.initialization) : "nil"
         );
     }
 }
