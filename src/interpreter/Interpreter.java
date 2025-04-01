@@ -266,7 +266,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 //                    value.equals("\"OO\"") || value.equals("\"DILI\"") : (Boolean)value;
                 return value instanceof Boolean;
             case "LETRA":
-                return true;
+                return value instanceof Character;
             default:
                 return false;
         }
