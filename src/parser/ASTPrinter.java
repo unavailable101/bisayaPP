@@ -1,6 +1,6 @@
 package parser;
 
-public class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor<String>{
+class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor<String>{
 
     String printStatement(Statement stmt){
         return stmt.accept(this);
