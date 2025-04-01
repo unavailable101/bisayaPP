@@ -30,7 +30,7 @@ public class Token {
 
     @Override
     public String toString() {
-        return "Token{" +
+        return "\nToken{" +
                 "type=" + type +
                 ", value='" + value + '\'' +
                 ", line=" + line +
