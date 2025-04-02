@@ -1,17 +1,14 @@
 package parser;
 
+import errors.Sayop;
 import lexer.Token;
 import lexer.TokenType;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static errors.Sayop.*;
 import static lexer.TokenType.*;
-
-// hello tree, my worst nightmare
-// we meet again
-// akala ko graduate na ako sayo, pero hindi pa pala
-
 
 public class Parser {
     private final List<List<Token>> lineTokens;
@@ -32,15 +29,13 @@ public class Parser {
 
         if (lineTokens.getFirst().getFirst() != lineTokens.getFirst().getLast() &&
                 lineTokens.getFirst().getFirst().getType() != START_PROG)
-            //dapat SyntaxError ni dire
-            throw new IllegalArgumentException("Expected 'SUGOD' before line " + lineTokens.getFirst().getFirst().getLine());
+            throw new SyntaxError(lineTokens.getFirst().getFirst().getLine(),"Expected 'SUGOD' before this line");
         else ++line;
 
 
         if (lineTokens.getLast().getFirst() != lineTokens.getLast().getLast() &&
                 lineTokens.getLast().getLast().getType() != END_PROG)
-            //dapat SyntaxError ni dire
-            throw new IllegalArgumentException("Expected 'KATAPUSAN' after line " + lineTokens.getLast().getLast().getLine());
+            throw new SyntaxError(lineTokens.getLast().getLast().getLine(), "Expected 'KATAPUSAN' after this line");
         else size = lineTokens.size()-1;
 
         List<Token> currLine;
@@ -83,13 +78,13 @@ public class Parser {
 
     private List<Statement> varDeclare(List<Token> tokens){
         Token dataType = null;
-        if (consume(currToken(tokens), DATA_TYPE, "Walay Data Type at line " + currToken(tokens).getLine())) dataType = currToken(tokens);
+        if (consume(currToken(tokens), DATA_TYPE, "Walay Data Type")) dataType = currToken(tokens);
         nextToken(tokens);
 
         List<Statement> declaration = new ArrayList<>();
         boolean expectNext = false;
 
-        consume(currToken(tokens), IDENTIFIER, "Walay variable name at line " + currToken(tokens).getLine());
+        consume(currToken(tokens), IDENTIFIER, "Walay variable name");
 
         while (currToken(tokens).getType() == IDENTIFIER) {
 
@@ -114,13 +109,13 @@ public class Parser {
             }
         }
 
-        if (expectNext) consume(currToken(tokens), IDENTIFIER, "Walay variable name human sa , at line " + currToken(tokens).getLine());
+        if (expectNext) consume(currToken(tokens), IDENTIFIER, "Walay variable name human sa ',' ");
 
         return declaration;
     }
 
     private Statement outputStatement(List<Token> tokens){
-            consume(currToken(tokens), COLON, "Walay ':' human sa " + prevToken(tokens) + " at line " + currToken(tokens).getLine());
+            consume(currToken(tokens), COLON, "Walay ':' human sa " + prevToken(tokens));
             nextToken(tokens);
             Expression expr = expression(tokens);
             return new Statement.Output(expr);
@@ -128,14 +123,14 @@ public class Parser {
     }
 
     private List<Statement> inputStatement(List<Token> tokens){
-            consume(currToken(tokens), COLON, "Walay ':' human sa " + prevToken(tokens) + " at line " + currToken(tokens).getLine());
+            consume(currToken(tokens), COLON, "Walay ':' human sa " + prevToken(tokens));
 
             nextToken(tokens);
             List<Statement> inputs = new ArrayList<>();
 
 //                Expression expr = expression(tokens);
             while (true) {
-                consume(currToken(tokens), IDENTIFIER, "Walay variable para input at line " + currToken(tokens).getLine());
+                consume(currToken(tokens), IDENTIFIER, "Walay variable para input");
                 inputs.add(new Statement.Input(currToken(tokens)));
                 nextToken(tokens);
                 if (currToken(tokens).getType() == COMMA) nextToken(tokens);
@@ -176,7 +171,7 @@ public class Parser {
                 Token var = prevToken(tokens);
                 nextToken(tokens);
                 return new Expression.Assign(var, assignment(tokens));
-            } else throw new IllegalArgumentException("Walay variable before '=' sa line " + currToken(tokens).getLine());
+            } else throw new SyntaxError(currToken(tokens).getLine(), "Walay variable before '='");
         }
 
         return expr;
@@ -192,7 +187,6 @@ public class Parser {
             Token op = currToken(tokens);
             nextToken(tokens);
             Expression right = logicalAnd(tokens);
-//            nextToken(tokens);
             expr = new Expression.Logic(expr, op, right);
         }
 
@@ -209,7 +203,6 @@ public class Parser {
             Token op = currToken(tokens);
             nextToken(tokens);
             Expression right = equality(tokens);
-//            nextToken(tokens);
             expr = new Expression.Logic(expr, op, right);
         }
 
@@ -227,7 +220,6 @@ public class Parser {
             Token op = currToken(tokens);
             nextToken(tokens);
             Expression right = comparison(tokens);
-//            nextToken(tokens);
             expr = new Expression.Compare(expr, op, right);
         }
 
@@ -247,7 +239,6 @@ public class Parser {
             Token op = currToken(tokens);
             nextToken(tokens);
             Expression right = term(tokens);
-//            nextToken(tokens);
             expr = new Expression.Compare(expr, op, right);
         }
 
@@ -266,7 +257,6 @@ public class Parser {
             Token op = currToken(tokens);
             nextToken(tokens);
             Expression right = factor(tokens);
-//            nextToken(tokens);
             expr = new Expression.Binary(expr, op, right);
         }
 
@@ -285,7 +275,6 @@ public class Parser {
             Token op = currToken(tokens);
             nextToken(tokens);
             Expression right = unary(tokens);
-//            nextToken(tokens);
             expr = new Expression.Binary(expr, op, right);
         }
 
@@ -335,13 +324,13 @@ public class Parser {
             case ARITH_OPEN_P:
                 nextToken(tokens);
                 expr = expression(tokens);
-                if (currToken(tokens).getType() != ARITH_CLOSE_P) throw new RuntimeException("Expected ')' after expression.");
+                if (currToken(tokens).getType() != ARITH_CLOSE_P) throw new SyntaxError(prevToken(tokens).getLine(), "Expected ')' after expression");
                 nextToken(tokens);
                 return new Expression.Group(expr);
 
         }
 
-        throw new RuntimeException("Expected expression.");
+        throw new RuntimeError(currToken(tokens).getLine(), "Expected expression");
     }
 
     private Token nextToken (List<Token> tokens){
@@ -357,9 +346,9 @@ public class Parser {
     }
 
     private boolean consume(Token curr, TokenType type, String error){
-        if (curr == null) throw new IllegalArgumentException(error);
+        if (curr == null) throw new SyntaxError(curr.getLine(), error);
         if (curr.getType() == type) return true;
-        throw new IllegalArgumentException(error);
+        throw new SyntaxError(curr.getLine(),error);
     }
 
 }
