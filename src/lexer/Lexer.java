@@ -49,6 +49,7 @@ public class Lexer {
     private final List<String> lines;
     private final List<List<Token>> tokenLines; //store tokens in each lines
     int currLine = 0;
+    int position = -1;
 
 //    in every list, if mag start kag indent, wa rashay pake
 //    when using .contains(), pwede kaau ang nay space
@@ -260,7 +261,7 @@ public class Lexer {
                     break;
                 default:
                     // error
-                    System.err.println("Unexpeted character: " + lexemes.charAt(i) + " at line " + currLine);
+                    throw new LexicalError(currLine, "Wala mailhi na character: " + lexemes.charAt(i));
             }
         }
     }
