@@ -1,11 +1,14 @@
 package interpreter;
 
+import errors.Sayop;
 import lexer.TokenType;
 import parser.Expression;
 import parser.Statement;
 
 import java.util.List;
 import java.util.Scanner;
+
+import static errors.Sayop.*;
 
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
@@ -32,7 +35,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         char type;
         switch (expression.op.getType()){
             case ARITH_MINUS:
-                type = ifNumOperand(right);
+                type = ifNumOperand(right, expression.op.getLine());
                 switch (type) {
                     case 'i': return -(int) right;
                     case 'd': return -(int) right;
@@ -48,42 +51,32 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     public Object visitBinary(Expression.Binary expression) {
         Object left = evaluate(expression.left);
         Object right = evaluate(expression.right);
-        char type;
         switch (expression.operator.getType()){
             case ARITH_ADD :
-                type = ifNumOperands(left, right);
-                switch (type) {
+                switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left + (int) right;
-                    case 'd' : return (int) left + (int) right;
+                    case 'd' : return (double) left + (double) right;
                 }
             case ARITH_MINUS :
-                type = ifNumOperands(left, right);
-                switch (type) {
+                switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left - (int) right;
-                    case 'd' : return (int) left - (int) right;
+                    case 'd' : return (double) left - (double) right;
                 }
-                return (int)left - (int)right;
             case ARITH_MULT :
-                type = ifNumOperands(left, right);
-                switch (type) {
+                switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left * (int) right;
-                    case 'd' : return (int) left * (int) right;
+                    case 'd' : return (double) left * (double) right;
                 }
-                return (int)left * (int)right;
             case ARITH_DIV :
-                type = ifNumOperands(left, right);
-                switch (type) {
+                switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left / (int) right;
-                    case 'd' : return (int) left / (int) right;
+                    case 'd' : return (double) left / (double) right;
                 }
-                return (int)left / (int)right;
             case ARITH_MOD :
-                type = ifNumOperands(left, right);
-                switch (type) {
+                switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left % (int) right;
-                    case 'd' : return (int) left % (int) right;
+                    case 'd' : return (double) left % (double) right;
                 }
-                return (int)left % (int)right;
             case CONCAT:
                 return stringify(left) + stringify(right);
         }
@@ -124,7 +117,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
         String dataType = env.getType(expression.name.getValue().toString()).getValue().toString();
 
-        if (!matchDT(dataType, value)) throw new RuntimeException("Data Type mismatch");
+        if (!matchDT(dataType, value)) throw new TypeError(expression.name.getLine(),"Data Type mismatch");
 
         env.assign(expression.name, value);
         return value;
@@ -146,31 +139,30 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             case ARITH_NOT_EQUAL :
                 return !isEqual(left, right);
             case ARITH_GT :
-                type = ifNumOperands(left, right);
+                type = ifNumOperands(left, right, expression.op.getLine());
                 switch (type) {
                     case 'i' : return (int) left > (int) right;
-                    case 'd' : return (int) left > (int) right;
+                    case 'd' : return (double) left > (double) right;
                 }
             case ARITH_LT :
-                type = ifNumOperands(left, right);
+                type = ifNumOperands(left, right, expression.op.getLine());
                 switch (type) {
                     case 'i' : return (int) left < (int) right;
-                    case 'd' : return (int) left < (int) right;
+                    case 'd' : return (double) left < (double) right;
                 }
             case ARITH_LOE :
-                type = ifNumOperands(left, right);
+                type = ifNumOperands(left, right, expression.op.getLine());
                 switch (type) {
                     case 'i' : return (int) left <= (int) right;
-                    case 'd' : return (int) left <= (int) right;
+                    case 'd' : return (double) left <= (double) right;
                 }
             case ARITH_GOE :
-                type = ifNumOperands(left, right);
+                type = ifNumOperands(left, right, expression.op.getLine());
                 switch (type) {
                     case 'i' : return (int) left >= (int) right;
-                    case 'd' : return (int) left >= (int) right;
+                    case 'd' : return (double) left >= (double) right;
                 }
         }
-
         return null;
     }
 
@@ -183,7 +175,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     @Override
     public <R> R visitOutput(Statement.Output statement) {
         Object value = evaluate(statement.expression);
-        System.out.println(stringify(value));
+        System.out.print(stringify(value));
         return null;
     }
 
@@ -193,7 +185,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
         String input = sc.nextLine();
 
-        Object value = inputType(input, env.getType(statement.variable.getValue().toString()).getValue().toString());
+        Object value = inputType(input, env.getType(statement.variable.getValue().toString()).getValue().toString(), statement.variable.getLine());
         env.assign(statement.variable, value);
 
         return null;
@@ -202,7 +194,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     @Override
     public <R> R visitVarDeclaration(Statement.VarDeclaration statement) {
         Object value = null;
-        if (statement.initialization != null) value = evaluate(statement.initialization);
+        if (statement.initialization != null) {
+            value = evaluate(statement.initialization);
+
+            if (!matchDT(statement.type.getValue().toString(), value)) throw new TypeError(statement.type.getLine(), "Cannot assign " + typeof(value) + " to variable of type " + statement.type.getValue().toString());
+        }
         env.define(statement.type, statement.var.getValue().toString(), value);
         return null;
     }
@@ -217,16 +213,16 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                 a == null || b == null ? false : a.equals(b);
     }
 
-    private char ifNumOperand (Object o){
+    private char ifNumOperand (Object o, int line){
         if (o instanceof Integer) return 'i';
         if (o instanceof Double) return 'd';
-        throw new RuntimeException("Dili ni sha number unary");
+        throw new RuntimeError(line, "Dili ni sha unary number");
     }
 
-    private char ifNumOperands (Object left, Object right){
+    private char ifNumOperands (Object left, Object right, int line){
         if ( left instanceof Integer && right instanceof Integer) return 'i';
         if ( left instanceof Double && right instanceof Double) return 'd';
-        throw new RuntimeException("Dili ni sha number binary");
+        throw new RuntimeError(line, "Dili ni sha number binary");
     }
 
     String stringify (Object value){
@@ -262,8 +258,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             case "PISI":
                 return value instanceof String;
             case "TINUOD":
-//                return value instanceof String ?
-//                    value.equals("\"OO\"") || value.equals("\"DILI\"") : (Boolean)value;
                 return value instanceof Boolean;
             case "LETRA":
                 return value instanceof Character;
@@ -272,7 +266,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         }
     }
 
-    private Object inputType (String input, String type){
+    private Object inputType (String input, String type, int line){
          switch (type){
              case "NUMERO":
                  return Integer.parseInt(input);
@@ -281,11 +275,19 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
              case "PISI":
                  return "\"" + input + "\"";
              case "LETRA":
-                 if (input.length()!=1) throw new RuntimeException("usa ra ka character");
+                 if (input.length()!=1) throw new TypeError(line, "usa ra ka character");
                  return "'" + input + "'";
              default:
-                 throw new RuntimeException("Wa ko kaila: ");
+                 throw new TypeError(line, "Wa ko kaila");
          }
+    }
+
+    private String typeof(Object value){
+        return value instanceof Integer ? "NUMERO" :
+                value instanceof Double ? "TIPIK" :
+                value instanceof Boolean ? "TINUOD" :
+                value instanceof String ? "PISI" :
+                value instanceof Character ? "LETRA" : "wala";
     }
 
 }

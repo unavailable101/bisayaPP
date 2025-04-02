@@ -1,5 +1,7 @@
 package interpreter;
 
+import errors.Sayop;
+import errors.Sayop.UndefinedVariableError;
 import lexer.Token;
 
 import java.util.HashMap;
@@ -16,7 +18,7 @@ class Environment {
 
     Object get(Token name){
         if (values.containsKey(name.getValue())) return values.get(name.getValue());
-        throw new RuntimeException("Undefined variable '" + name.getValue() + "'");
+        throw new UndefinedVariableError(name.getLine(),"Undefined variable '" + name.getValue() + "'");
     }
 
     Token getType (String var){
@@ -34,6 +36,6 @@ class Environment {
             values.put(name.getValue().toString(), value);
             return;
         }
-        throw new RuntimeException("Undefined variable '" + name.getValue() + "'");
+        throw new UndefinedVariableError(name.getLine(),"Undefined variable '" + name.getValue() + "'");
     }
 }
