@@ -65,7 +65,6 @@ public class Lexer {
     public Lexer(List<String> lines) {
         this.lines = lines;
         this.tokenLines = new ArrayList<>();
-//        System.out.println(this.lines);
     }
 
     public List<List<Token>> readlines(){
@@ -100,41 +99,24 @@ public class Lexer {
         if (line.startsWith("--") || line.isBlank()) return;
 
         List<String> lexemes = new ArrayList<>(Arrays.asList(line.split("\\s+")));
-        TokenType type = NONE;
+        TokenType type;
 
         for (int i = 0; i < lexemes.size(); i++) {
+
             String lexeme = lexemes.get(i);
 
-            switch (lexeme) {
-                case "SUGOD":
-                    type = START_PROG;
-                    break;
-                case "KATAPUSAN":
-                    type = END_PROG;
-                    break;
-                case "MUGNA":
-                    type = VAR_DECLARATION;
-                    break;
-                case "NUMERO":
-                case "LETRA":
-                case "TINUOD":
-                case "TIPIK":
-                case "PISI":
-                    type = DATA_TYPE;
-                    break;
-                case "DAWAT":
-                    type = INPUT;
-                    break;
-                case "IPAKITA":
-                    type = OUTPUT;
-                    break;
-                default:
-                    if (lexeme.contains("IPAKITA") || lexeme.contains("DAWAT")) checkIO(lexeme, lineToken);
-                    else if (similarKeyword(lexeme)) throw new LexicalError(currLine, "Dili maila na keyword '" + lexeme + "'. Imo gipasabot ba kay " + realKeyword(lexeme) + "?");
-                    else {
-                        tokenizeParts(String.join(" ", lexemes.subList(lexemes.indexOf(lexeme), lexemes.size())), lineToken);
-                        return;
-                    }
+            if (KEYWORDS.containsKey(lexeme)) type = KEYWORDS.get(lexeme);
+            else {
+                if (lexeme.contains("IPAKITA") || lexeme.contains("DAWAT")) {
+                    checkIO(lexeme, lineToken);
+                    continue;
+                }
+                else if (similarKeyword(lexeme)) throw new LexicalError(currLine, "Dili maila na keyword '" + lexeme + "'. Imo gipasabot ba kay " + realKeyword(lexeme) + "?");
+                else {
+//                    System.out.println(String.join(" ", lexemes.subList(i, lexemes.size())));
+                    tokenizeParts(String.join(" ", lexemes.subList(i, lexemes.size())), lineToken);
+                    return;
+                }
             }
             lineToken.add(new Token(type, lexeme));
             setLine(lineToken);
@@ -161,7 +143,6 @@ public class Lexer {
             STATE state = ts.tokenState(lexemes.charAt(i));
 
             switch(state){
-
                 case STATE.WHITESPACE:
                     break;
 
@@ -169,7 +150,6 @@ public class Lexer {
                 case STATE.UPPER_CASE :
                     // assuming these are other keywords like UG, O, DILI
                     while (i < lexemes.length() && Character.isUpperCase(lexemes.charAt(i))){
-                        // LexicalException gyud ni siya
                         if (i >= lexemes.length()) throw new LexicalError(currLine, "Unterminated character literal at position " + i);
                         lexeme.append(lexemes.charAt(i));
                         ++i;
@@ -181,7 +161,6 @@ public class Lexer {
                 case STATE.UNDERSCORE:
                     //assume na variable/identifier ni siya
                     while (i < lexemes.length() && (Character.isLetterOrDigit(lexemes.charAt(i)) || lexemes.charAt(i) == '_')){
-                        // LexicalException gyud ni siya
                         if (i >= lexemes.length()) throw new LexicalError(currLine,"Unterminated character literal at position " + i);
                         lexeme.append(lexemes.charAt(i));
                         ++i;
@@ -192,7 +171,6 @@ public class Lexer {
                 case STATE.NUMBER:
                     // integer or decimal
                     while(i < lexemes.length() && (Character.isDigit(lexemes.charAt(i)) || lexemes.charAt(i) == '.')){
-                        // LexicalException gyud ni siya
                         if (i >= lexemes.length()) throw new LexicalError(currLine,"Unterminated character literal at position " + i);
 
                         lexeme.append(lexemes.charAt(i));
@@ -207,11 +185,13 @@ public class Lexer {
                     lineToken.add(new Token(COLON, String.valueOf(lexemes.charAt(i))));
                     setLine(lineToken);
                     break;
+
                 case STATE.BRACKET:
+                    // DO NOT MODIFY! Unique ni sha
                     lineToken.add(new Token(BRACKET_OPEN, String.valueOf(lexemes.charAt(i))));
                     setLine(lineToken);
                     ++i;
-                    if (i >= lexeme.length() ) throw new LexicalError(currLine, "Wala nahuman ang bracket nga escape code");
+                    if (i >= lexemes.length() ) throw new LexicalError(currLine, "Wala nahuman ang bracket nga escape code");
                     if (lexemes.charAt(i+1) == ']') lineToken.add(new Token(ESCAPE_CODE, String.valueOf(lexemes.charAt(i))));
                     ++i;
                     setLine(lineToken);
@@ -235,7 +215,6 @@ public class Lexer {
                     isChar = true;
                     ++i;
                     while (isChar){
-                        // LexicalException gyud ni siya
                         if (i >= lexemes.length()) throw new LexicalError(currLine,"Unterminated character literal at position " + i);
                         if (lexemes.charAt(i) == '\'') isChar = false;
                         lexeme.append(lexemes.charAt(i));
@@ -248,7 +227,6 @@ public class Lexer {
                     isString = true;
                     ++i;
                     while (isString){
-                        // LexicalException gyud ni siya
                         if (i >= lexemes.length()) throw new LexicalError(currLine,"Unterminated character literal at position " + i);
                         if (lexemes.charAt(i) == '"') isString = false;
                         lexeme.append(lexemes.charAt(i));
@@ -387,8 +365,7 @@ public class Lexer {
             setLine(lineToken);
             lineToken.add(new Token(COLON, lexeme.substring(lexeme.length()-1)));
             setLine(lineToken);
-        }
-        else throw new LexicalError(currLine,"Dili maila na keyword '" + lexeme + "'. " +
+        } else throw new LexicalError(currLine,"Dili maila na keyword '" + lexeme + "'. " +
                 (lexeme.contains("IPAKITA") ? "Imo gipasabot ba kay 'IPAKITA'?" :
                         (lexeme.contains("DAWAT") ? "Imo gipasabot ba kay 'DAWAT'?" : "")
                 )
@@ -396,8 +373,6 @@ public class Lexer {
 
     }
 
-    // wala ni na tarong
-    // need i fix para sa kanang keywords na wrong ra ang spelling
     private boolean similarKeyword(String lexeme){
 //        System.out.println("na print ko -- similar keyword");
         return realKeyword(lexeme) != "wala";
