@@ -1,7 +1,7 @@
 package lexer;
 
 //dapat within the package lexer ni, di pwede ma access sa other packages (parser and interpreter)
-public class TokenState {
+class TokenState {
     public enum STATE {
 
         // CHARACTERS OR NUMBERS

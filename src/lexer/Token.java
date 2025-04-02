@@ -24,13 +24,13 @@ public class Token {
         return line;
     }
 
-    public void setLine(int line){
+    void setLine(int line){
         this.line = line;
     }
 
     @Override
     public String toString() {
-        return "Token{" +
+        return "\nToken{" +
                 "type=" + type +
                 ", value='" + value + '\'' +
                 ", line=" + line +
