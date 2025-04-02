@@ -18,7 +18,7 @@ class Environment {
 
     Object get(Token name){
         if (values.containsKey(name.getValue())) return values.get(name.getValue());
-        throw new UndefinedVariableError(name.getLine(),"Undefined variable '" + name.getValue() + "'");
+        throw new UndefinedVariableError(name.getLine(), name.getValue().toString() );
     }
 
     Token getType (String var){
@@ -36,6 +36,6 @@ class Environment {
             values.put(name.getValue().toString(), value);
             return;
         }
-        throw new UndefinedVariableError(name.getLine(),"Undefined variable '" + name.getValue() + "'");
+        throw new UndefinedVariableError(name.getLine(),name.getValue().toString() );
     }
 }

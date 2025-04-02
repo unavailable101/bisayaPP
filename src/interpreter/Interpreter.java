@@ -216,7 +216,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     private char ifNumOperand (Object o, int line){
         if (o instanceof Integer) return 'i';
         if (o instanceof Double) return 'd';
-        throw new RuntimeError(line, "Dili ni sha unary number");
+        throw new RuntimeError(line, o.toString() + " kay dili number");
     }
 
     private char ifNumOperands (Object left, Object right, int line){

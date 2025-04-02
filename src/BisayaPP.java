@@ -5,6 +5,7 @@ import parser.Parser;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 public class BisayaPP {
     private static String filename;
@@ -15,10 +16,10 @@ public class BisayaPP {
             return;
         }
 
-//        Scanner sc = new Scanner(System.in);
-//        System.out.print("Enter file you want to run: ");
-//
-//        filename = args[0] + sc.nextLine() + ".bpp";
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter file you want to run: ");
+
+        filename = args[0] + sc.nextLine() + ".bpp";
 
         try {
             new Interpreter().interpret(
@@ -26,7 +27,8 @@ public class BisayaPP {
                             new Lexer(
                                     Files.readAllLines(
                                             Paths.get(
-                                                    args[0]
+//                                                    args[0]
+                                                    filename
                                             )
                                     )
                             ).readlines()
