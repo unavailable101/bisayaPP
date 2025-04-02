@@ -1,7 +1,7 @@
 package lexer;
 
 //dapat within the package lexer ni, di pwede ma access sa other packages (parser and interpreter)
-public class TokenState {
+class TokenState {
     public enum STATE {
 
         // CHARACTERS OR NUMBERS
@@ -83,6 +83,8 @@ public class TokenState {
                     state = STATE.UNDERSCORE;
                     break;
                 case ' ':
+                case '\n':
+                case '\t':
                     state = STATE.WHITESPACE; break;
                 default:
                     if (Character.isDigit(c)) state = STATE.NUMBER;

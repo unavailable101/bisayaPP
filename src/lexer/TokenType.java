@@ -9,7 +9,7 @@ public enum TokenType {
 //    KEYWORD,              // : general category
     VAR_DECLARATION,        // : MUGNA
     DATA_TYPE,              // : data types (NUMERO, LETRA, TINUOD, TIPIK, PISI)
-    VARIABLE,               // : variable names
+    IDENTIFIER,               // : variable names
 
     //was thinking na i generalize lng but murag mag lisod sa parser
 //    LITERALS,               // : kani mga integer, double, string, characters... interpreter nay bahala kng sakto bha na literal iya gi gamit para sa specific na data type.. letse nalang

@@ -1,10 +1,12 @@
+import interpreter.Interpreter;
 import lexer.Lexer;
+import parser.Parser;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class BisayaPPFileInterpreter {
+public class BisayaPP {
     private static String filename;
 
     public static void main(String[] args) throws Exception{
@@ -19,14 +21,18 @@ public class BisayaPPFileInterpreter {
 //        filename = args[0] + sc.nextLine() + ".bpp";
 
         try {
-//            List<String> code = Files.readAllLines(Paths.get(filename));
-            new Lexer(Files.readAllLines(Paths.get(args[0]))).readlines();
-//            Lexer lexer = new Lexer(Files.readAllLines(Paths.get(args[0])));
-//            lexer.readlines();
-//            for (Token token : lexer.tokenize()){
-//                System.out.println(token);
-//            }
-
+//            new Interpreter().interpret(
+//                    new Parser(
+                            new Lexer(
+                                    Files.readAllLines(
+                                            Paths.get(
+                                                    args[0]
+                                            )
+                                    )
+                            ).readlines()
+//                    ).parse()
+//            )
+            ;
         } catch (IOException e) {
             System.out.println("Unable to read file: " + filename);
         }
