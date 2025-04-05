@@ -1,7 +1,5 @@
 package lexer;
 
-import errors.Sayop;
-
 import static errors.Sayop.*;
 
 //under this package kay dapat ang nay access ragyud kay under sa lexer na package
@@ -14,15 +12,12 @@ interface LiteralChecker {
         @Override
         public boolean isLiteral(String lexeme, int line){   //Accepted values: "OO" and "DILI"
             return lexeme.matches("^\"(OO|DILI)\"$");
-//        if (lexeme.startsWith("\"")){
-//            if (!lexeme.endsWith("\"")) throw new IllegalArgumentException("Sayop: kulangan ni og \"");
-//        }
-//        return lexeme.substring(1,lexeme.length()-1).equals("OO") || lexeme.substring(1,lexeme.length()-1).equals("DILI");
         }
 
         @Override
         public Token addToken(String lexeme) {
-            return new Token(TokenType.BOOLEAN, lexeme);
+            Boolean val = lexeme.equals("OO") ? Boolean.TRUE : Boolean.FALSE;
+            return new Token(TokenType.BOOLEAN, val);
         }
     }
 
@@ -40,7 +35,7 @@ interface LiteralChecker {
 
         @Override
         public Token addToken(String lexeme) {
-            return new Token(TokenType.CHARACTERS, lexeme);
+            return new Token(TokenType.CHARACTERS, Character.valueOf(lexeme.charAt(1)));
         }
     }
 

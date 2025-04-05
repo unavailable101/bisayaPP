@@ -1,7 +1,5 @@
 package interpreter;
 
-import errors.Sayop;
-import lexer.TokenType;
 import parser.Expression;
 import parser.Statement;
 
@@ -51,31 +49,49 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     public Object visitBinary(Expression.Binary expression) {
         Object left = evaluate(expression.left);
         Object right = evaluate(expression.right);
+
+        double l, r;
+
         switch (expression.operator.getType()){
             case ARITH_ADD :
                 switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left + (int) right;
-                    case 'd' : return (double) left + (double) right;
+                    case 'd' :
+                        l = left instanceof Integer ? ((Integer) left).doubleValue() : (double)left;
+                        r = right instanceof Integer ? ((Integer) right).doubleValue() : (double)right;
+                        return l + r;
                 }
             case ARITH_MINUS :
                 switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left - (int) right;
-                    case 'd' : return (double) left - (double) right;
+                    case 'd' :
+                        l = left instanceof Integer ? ((Integer) left).doubleValue() : (double)left;
+                        r = right instanceof Integer ? ((Integer) right).doubleValue() : (double)right;
+                        return l - r;
                 }
             case ARITH_MULT :
                 switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left * (int) right;
-                    case 'd' : return (double) left * (double) right;
+                    case 'd' :
+                        l = left instanceof Integer ? ((Integer) left).doubleValue() : (double)left;
+                        r = right instanceof Integer ? ((Integer) right).doubleValue() : (double)right;
+                        return l * r;
                 }
             case ARITH_DIV :
                 switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left / (int) right;
-                    case 'd' : return (double) left / (double) right;
+                    case 'd' :
+                        l = left instanceof Integer ? ((Integer) left).doubleValue() : (double)left;
+                        r = right instanceof Integer ? ((Integer) right).doubleValue() : (double)right;
+                        return l / r;
                 }
             case ARITH_MOD :
                 switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left % (int) right;
-                    case 'd' : return (double) left % (double) right;
+                    case 'd' :
+                        l = left instanceof Integer ? ((Integer) left).doubleValue() : (double)left;
+                        r = right instanceof Integer ? ((Integer) right).doubleValue() : (double)right;
+                        return l % r;
                 }
             case CONCAT:
                 return stringify(left) + stringify(right);
@@ -83,19 +99,19 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
 
-    //ambot
     @Override
     public Object visitLogic(Expression.Logic expression) {
         Object left = evaluate(expression.left);
         Object right = evaluate(expression.right);
 
+        if (!matchDT("TINUOD", left) || !matchDT("TINUOD", right) )
+            throw new TypeError(expression.logic_op.getLine(), "\n\tAng value sa first type " + left.toString() + "\n\tAng value sa second type " + right.toString());
+
         switch (expression.logic_op.getType()){
             case LOG_AND :
-                return isTrue(left) && isTrue(right);
-//                return null;
+                return (boolean)left && (boolean)right;
             case LOG_OR :
-                return isTrue(left) || isTrue(right);
-//                return null;
+                return (boolean)left || (boolean)right;
         }
 
         return null;
@@ -132,35 +148,43 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     public Object visitCompare(Expression.Compare expression) {
         Object left = evaluate(expression.left);
         Object right = evaluate(expression.right);
-        char type;
+        double l,r;
         switch (expression.op.getType()){
             case ARITH_EQUAL :
                 return isEqual(left, right);
             case ARITH_NOT_EQUAL :
                 return !isEqual(left, right);
             case ARITH_GT :
-                type = ifNumOperands(left, right, expression.op.getLine());
-                switch (type) {
+                switch (ifNumOperands(left, right, expression.op.getLine())) {
                     case 'i' : return (int) left > (int) right;
-                    case 'd' : return (double) left > (double) right;
+                    case 'd' :
+                        l = left instanceof Integer ? ((Integer) left).doubleValue() : (double)left;
+                        r = right instanceof Integer ? ((Integer) right).doubleValue() : (double)right;
+                        return l > r;
                 }
             case ARITH_LT :
-                type = ifNumOperands(left, right, expression.op.getLine());
-                switch (type) {
+                switch (ifNumOperands(left, right, expression.op.getLine())) {
                     case 'i' : return (int) left < (int) right;
-                    case 'd' : return (double) left < (double) right;
+                    case 'd' :
+                        l = left instanceof Integer ? ((Integer) left).doubleValue() : (double)left;
+                        r = right instanceof Integer ? ((Integer) right).doubleValue() : (double)right;
+                        return l < r;
                 }
             case ARITH_LOE :
-                type = ifNumOperands(left, right, expression.op.getLine());
-                switch (type) {
+                switch (ifNumOperands(left, right, expression.op.getLine())) {
                     case 'i' : return (int) left <= (int) right;
-                    case 'd' : return (double) left <= (double) right;
+                    case 'd' :
+                        l = left instanceof Integer ? ((Integer) left).doubleValue() : (double)left;
+                        r = right instanceof Integer ? ((Integer) right).doubleValue() : (double)right;
+                        return l <= r;
                 }
             case ARITH_GOE :
-                type = ifNumOperands(left, right, expression.op.getLine());
-                switch (type) {
+                switch (ifNumOperands(left, right, expression.op.getLine())) {
                     case 'i' : return (int) left >= (int) right;
-                    case 'd' : return (double) left >= (double) right;
+                    case 'd' :
+                        l = left instanceof Integer ? ((Integer) left).doubleValue() : (double)left;
+                        r = right instanceof Integer ? ((Integer) right).doubleValue() : (double)right;
+                        return l >= r;
                 }
         }
         return null;
@@ -205,7 +229,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     private boolean isTrue(Object o){
         return o == null ? false :
-                o instanceof Boolean ? (boolean)o : true;
+                o instanceof Boolean ? (boolean)o : false;
     }
 
     private boolean isEqual(Object a, Object b){
@@ -219,10 +243,13 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         throw new RuntimeError(line, o.toString() + " kay dili number");
     }
 
+    // ambot if kailangan bha same datatype ang left and right expressions
+    // pwede rani ma change
+    // rararararararar
     private char ifNumOperands (Object left, Object right, int line){
-        if ( left instanceof Integer && right instanceof Integer) return 'i';
-        if ( left instanceof Double && right instanceof Double) return 'd';
-        throw new RuntimeError(line, "Dili ni sha number binary");
+        if ( left instanceof Integer  && right instanceof Integer) return 'i';
+        if ( left instanceof Double && right instanceof Double)  return 'd';
+        throw new RuntimeError(line, "\n\tAng value sa first type " + left.toString() + "\n\tAng value sa second type " + right.toString());
     }
 
     String stringify (Object value){
@@ -237,13 +264,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
             String str = (String)value;
 
-            if (
-                    str.startsWith("\"") && str.endsWith("\"") ||
-                    str.startsWith("'") && str.endsWith("'")
-            ) {
-                return str.substring(1, str.length() - 1);
-            }
-            return str;
+            return str.startsWith("\"") && str.endsWith("\"") ? str.substring(1, str.length() - 1) :  str;
         }
 
         return value.toString();
@@ -276,7 +297,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                  return "\"" + input + "\"";
              case "LETRA":
                  if (input.length()!=1) throw new TypeError(line, "usa ra ka character");
-                 return "'" + input + "'";
+                 return Character.valueOf(input.charAt(0));
              default:
                  throw new TypeError(line, "Wa ko kaila");
          }

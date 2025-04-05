@@ -131,7 +131,7 @@ public class Lexer {
 //    private void tokenizeParts(int start, int end, List<String> lexemes){
     private void tokenizeParts(String lexemes, List<Token> lineToken){
 
-        StringBuilder lexeme = new StringBuilder();
+        StringBuilder lex = new StringBuilder();
         boolean isChar, isString;
 
         isChar = isString = false;
@@ -152,33 +152,33 @@ public class Lexer {
                     // assuming these are other keywords like UG, O, DILI
                     while (i < lexemes.length() && Character.isUpperCase(lexemes.charAt(i))){
                         if (i >= lexemes.length()) throw new LexicalError(currLine, "Unterminated character literal at position " + i);
-                        lexeme.append(lexemes.charAt(i));
+                        lex.append(lexemes.charAt(i));
                         ++i;
                     }
                     --i;
-                    addToken(lexeme, lineToken);
+                    addToken(lex, lineToken);
                     break;
                 case STATE.LOWER_CASE:
                 case STATE.UNDERSCORE:
                     //assume na variable/identifier ni siya
                     while (i < lexemes.length() && (Character.isLetterOrDigit(lexemes.charAt(i)) || lexemes.charAt(i) == '_')){
                         if (i >= lexemes.length()) throw new LexicalError(currLine,"Unterminated character literal at position " + i);
-                        lexeme.append(lexemes.charAt(i));
+                        lex.append(lexemes.charAt(i));
                         ++i;
                     }
                     --i;
-                    addToken(lexeme, lineToken);
+                    addToken(lex, lineToken);
                     break;
                 case STATE.NUMBER:
                     // integer or decimal
                     while(i < lexemes.length() && (Character.isDigit(lexemes.charAt(i)) || lexemes.charAt(i) == '.')){
                         if (i >= lexemes.length()) throw new LexicalError(currLine,"Unterminated character literal at position " + i);
 
-                        lexeme.append(lexemes.charAt(i));
+                        lex.append(lexemes.charAt(i));
                         ++i;
                     }
                     --i;
-                    addToken(lexeme, lineToken);
+                    addToken(lex, lineToken);
                     break;
 
                 // symbols
@@ -212,34 +212,35 @@ public class Lexer {
                     setLine(lineToken);
                     break;
                 case STATE.SINGLE_Q:
-                    lexeme.append(lexemes.charAt(i));
+                    lex.append(lexemes.charAt(i));
                     isChar = true;
                     ++i;
                     while (isChar){
                         if (i >= lexemes.length()) throw new LexicalError(currLine,"Unterminated character literal at position " + i);
                         if (lexemes.charAt(i) == '\'') isChar = false;
-                        lexeme.append(lexemes.charAt(i));
+                        lex.append(lexemes.charAt(i));
                         ++i;
                     }
-                    addToken(lexeme, lineToken);
+                    addToken(lex, lineToken);
                     break;
                 case STATE.DOUBLE_Q:
-                    lexeme.append(lexemes.charAt(i));
+                    lex.append(lexemes.charAt(i));
                     isString = true;
                     ++i;
                     while (isString){
                         if (i >= lexemes.length()) throw new LexicalError(currLine,"Unterminated character literal at position " + i);
                         if (lexemes.charAt(i) == '"') isString = false;
-                        lexeme.append(lexemes.charAt(i));
+                        lex.append(lexemes.charAt(i));
                         ++i;
                     }
-                    addToken(lexeme, lineToken);
+                    addToken(lex, lineToken);
                     break;
 
                 // operators
                 case STATE.ARITH_OP:
                     addOperations(String.valueOf(lexemes.charAt(i)), lineToken); break;
                 case STATE.MINUS:
+                    if (i+1 >= lexemes.length()) throw new RuntimeError(currLine, "Unterminated character literal");
                     if (lexemes.charAt(i+1) == '-'){
                         lineToken.add(new Token(COMMENT, lexemes.substring(i)));
                         setLine(lineToken);
@@ -248,15 +249,15 @@ public class Lexer {
                     addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
                 case STATE.GT:
-                    if (lexemes.charAt(i+1) == '>' ||lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
+                    if (lexemes.length() > i+1 && lexemes.charAt(i+1) == '>' ||lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
                     else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
                 case STATE.LT:
-                    if (lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
+                    if (lexemes.length() > i+1 && lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
                     else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
                 case STATE.EQUALS:
-                    if (lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
+                    if (lexemes.length() > i+1 && lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
                     else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
                 default:
