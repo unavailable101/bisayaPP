@@ -195,17 +195,31 @@ public class Parser {
 
     private Expression logicalAnd(List<Token> tokens){
 
-        Expression expr = equality(tokens);
+//        Expression expr = equality(tokens);
+        Expression expr = concatenation(tokens);
 
         while (
                 currToken(tokens).getType() == LOG_AND
         ){
             Token op = currToken(tokens);
             nextToken(tokens);
-            Expression right = equality(tokens);
+//            Expression right = equality(tokens);
+            Expression right = concatenation(tokens);
             expr = new Expression.Logic(expr, op, right);
         }
 
+        return expr;
+    }
+
+    private Expression concatenation (List<Token> tokens){
+        Expression expr = equality(tokens);
+
+        while (currToken(tokens).getType() == CONCAT){
+            Token op = currToken(tokens);
+            nextToken(tokens);
+            Expression right = equality(tokens);
+            expr = new Expression.Binary(expr, op, right);
+        }
         return expr;
     }
 
@@ -251,8 +265,9 @@ public class Parser {
 
         while (
                 currToken(tokens).getType() == ARITH_ADD    ||
-                currToken(tokens).getType() == ARITH_MINUS  ||
-                currToken(tokens).getType() == CONCAT       // para string
+                currToken(tokens).getType() == ARITH_MINUS
+//                        ||
+//                currToken(tokens).getType() == CONCAT       // para string
         ){
             Token op = currToken(tokens);
             nextToken(tokens);

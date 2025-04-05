@@ -66,7 +66,9 @@
 
 < logical_or >          ->      < logical_and > ( OR < logical_and > )*
 
-< logical_and >         ->      < equal > ( AND < equal > )*
+< logical_and >         ->      < concatenation > ( AND < concatenation > )*
+
+< concatenation >         ->      < equal > ( & < equal > )*
 
 < equal >               ->      < comparison > ( ( == | <> ) < comparison > ) *
 
