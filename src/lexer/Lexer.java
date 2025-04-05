@@ -16,6 +16,7 @@ public class Lexer {
 
     private static final Map<String, TokenType> KEYWORDS = new HashMap<>();
 
+    // note na mga one words ang naa dire
     static{
         KEYWORDS.put("SUGOD", START_PROG);
         KEYWORDS.put("KATAPUSAN", END_PROG);
@@ -33,6 +34,16 @@ public class Lexer {
         KEYWORDS.put("UG", LOG_AND);
         KEYWORDS.put("O", LOG_OR);
         KEYWORDS.put("DILI", LOG_NOT);
+
+        KEYWORDS.put("PUNDOK", BLOCK);
+
+        KEYWORDS.put("KUNG", IF);
+        KEYWORDS.put("ILISAN", SWITCH);
+        KEYWORDS.put("KASO", CASE);
+
+        KEYWORDS.put("BUHAT", DO);
+        KEYWORDS.put("SAMTANG", WHILE);
+        KEYWORDS.put("ALANG", FOR);         // temporary rani, in the tokenKeywords, it will first check if naa bhay "SA" after "ALANG"
 
         KEYWORDS.put(null, NONE);     // wa man ni gamit oi, di man ni ma recognize
     }
@@ -71,7 +82,6 @@ public class Lexer {
     public List<List<Token>> readlines(){
 
         for (int i = 0; i<lines.size(); i++){
-
 //            System.out.println("Reading line: " + (i+1));
             currLine = i+1;
             String line = lines.get(i).trim();
@@ -79,10 +89,7 @@ public class Lexer {
             if(!line.isEmpty()){
 
                 List<Token> lineToken = new ArrayList<>();
-
                 tokenMKeywords(line, lineToken);
-//                for (Token t : lineToken) t.setLine(i+1);
-//                System.out.println(lineToken);
                 if (!lineToken.isEmpty()) tokenLines.add(lineToken);
             }
         }
@@ -106,7 +113,24 @@ public class Lexer {
 
             String lexeme = lexemes.get(i);
 
-            if (KEYWORDS.containsKey(lexeme)) type = KEYWORDS.get(lexeme);
+            if (KEYWORDS.containsKey(lexeme)) {
+                type = KEYWORDS.get(lexeme);
+                if (type == IF){
+                    if (lexemes.get(i+1).equals("DILI")){
+                        lexeme += " " + lexemes.get(i+1);
+                    }
+                    if (lexemes.get(i+1).equals("WALA")){
+                        lexeme += " " + lexemes.get(i+1);
+                    }
+                }
+                if (type == FOR){
+                    if (lexemes.get(i+1).equals("SA")) lexeme = lexeme + " " + lexemes.get(++i);
+                    else if (lexemes.get(i+1).contains("SA")) {
+                        handleForLoop(line);
+                        return;
+                    } else throw new SyntaxError(currLine, "Kulang ang keword. Dapat 'ALANG SA'");
+                }
+            }
             else {
                 if (lexeme.contains("IPAKITA") || lexeme.contains("DAWAT")) {
                     checkIO(lexeme, lineToken);
@@ -221,6 +245,7 @@ public class Lexer {
                         lex.append(lexemes.charAt(i));
                         ++i;
                     }
+                    --i;
                     addToken(lex, lineToken);
                     break;
                 case STATE.DOUBLE_Q:
@@ -233,6 +258,7 @@ public class Lexer {
                         lex.append(lexemes.charAt(i));
                         ++i;
                     }
+                    --i;
                     addToken(lex, lineToken);
                     break;
 
@@ -401,6 +427,22 @@ public class Lexer {
 
     private void setLine(List<Token> lineToken){
         lineToken.getLast().setLine(currLine);
+    }
+
+    /*
+        cases like
+
+            ALANG SA(expression)
+
+        mga walay spaces except sa ALANG lang
+        so need sha i handle as a whole line
+        and expect that this whole line is a declaration statement na for loop ni sha
+    */
+    private void handleForLoop(String lexemes){
+        System.out.println(lexemes);
+        int start = lexemes.indexOf('(');
+        System.out.println(lexemes.substring(0,start));
+        System.out.println(lexemes.substring(start));
     }
 
 }

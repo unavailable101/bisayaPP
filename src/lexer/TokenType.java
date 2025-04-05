@@ -3,13 +3,13 @@ package lexer;
 //note: walay keyword na PUNDOK, deretso nani kay kapoy
 
 public enum TokenType {
-    START_PROG,                  // : start program
-    END_PROG,                    // : end program
+    START_PROG,             // : start program
+    END_PROG,               // : end program
 
 //    KEYWORD,              // : general category
     VAR_DECLARATION,        // : MUGNA
     DATA_TYPE,              // : data types (NUMERO, LETRA, TINUOD, TIPIK, PISI)
-    IDENTIFIER,               // : variable names
+    IDENTIFIER,             // : variable names
 
     //was thinking na i generalize lng but murag mag lisod sa parser
 //    LITERALS,               // : kani mga integer, double, string, characters... interpreter nay bahala kng sakto bha na literal iya gi gamit para sa specific na data type.. letse nalang
@@ -47,8 +47,6 @@ public enum TokenType {
     LOG_OR,                 // : O
     LOG_NOT,                // : DILI
 
-
-
 //    SYMBOL,               // : special symbol
     CONCAT,                 //      - &     : concat strings
     BRACKET_OPEN,           //      - []    : escape code
@@ -62,6 +60,22 @@ public enum TokenType {
 
     COMMENT,                // : starts with "--", and dawaton if mag --- or ----
                             /// this is a comment
+
+    // CONDITIONAL
+    BLOCK,                  // PUNDOK
+    OPEN_BRACKET,
+    CLOSE_BRACKET,
+
+    IF,                     // : KUNG
+    ELSE,                   // : KUNG WALA
+    IF_ELSE,                // : KUNG DILI
+    SWITCH,                 // : ILISAN
+    CASE,                   // : KASO
+
+    // LOOPS
+    DO,                     // : BUHAT
+    WHILE,                  // : SAMTANG
+    FOR,                    // : ALANG SA
 
     NONE
 }
