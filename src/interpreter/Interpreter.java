@@ -197,6 +197,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
+    public Object visitEscapeCode(Expression.EscapeCode code) {
+        return code.code.getValue().toString();
+    }
+
+    @Override
     public <R> R visitOutput(Statement.Output statement) {
         Object value = evaluate(statement.expression);
         System.out.print(stringify(value));

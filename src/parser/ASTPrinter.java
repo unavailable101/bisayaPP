@@ -77,6 +77,11 @@ class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor<String
     }
 
     @Override
+    public String visitEscapeCode(Expression.EscapeCode code) {
+        return code.code.getValue().toString();
+    }
+
+    @Override
     public String visitExpr(Statement.Expr statement) {
         return parenthesizeStmt("Statement expression: ", printExpr(statement.expression));
     }

@@ -16,7 +16,7 @@ interface LiteralChecker {
 
         @Override
         public Token addToken(String lexeme) {
-            Boolean val = lexeme.equals("OO") ? Boolean.TRUE : Boolean.FALSE;
+            Boolean val = lexeme.equals("\"OO\"") ? Boolean.TRUE : Boolean.FALSE;
             return new Token(TokenType.BOOLEAN, val);
         }
     }

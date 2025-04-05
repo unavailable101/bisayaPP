@@ -320,6 +320,15 @@ public class Parser {
                 nextToken(tokens);
                 return expr;
 
+            //escape codes rar
+            case BRACKET_OPEN:
+                nextToken(tokens);
+                if (currToken(tokens).getType() != ESCAPE_CODE) throw new SyntaxError(currToken(tokens).getLine(), "Walay escape code human sa '['");
+                Token code = currToken(tokens);
+                nextToken(tokens);
+                if (currToken(tokens).getType() != BRACKET_CLOSE) throw new SyntaxError(currToken(tokens).getLine(), "Walay closing brackets human sa escape code");
+                nextToken(tokens);
+                return new Expression.EscapeCode(code);
              //if group sha
             case ARITH_OPEN_P:
                 nextToken(tokens);

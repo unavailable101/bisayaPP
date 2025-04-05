@@ -16,6 +16,7 @@ public abstract class Expression {
         R visitAssign(Assign expression);
         R visitVariable(Variable expression);
         R visitCompare(Compare expression);
+        R visitEscapeCode(EscapeCode code);
     }
     // < expression >   -> < unaru >
     // < unary >        -> ( ADD | MINUS) ( < literal > | IDENTIFIER )
@@ -148,6 +149,19 @@ public abstract class Expression {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitCompare(this);
+        }
+    }
+
+    public static class EscapeCode extends Expression {
+        public final Token code;
+
+        public EscapeCode(Token code) {
+            this.code = code;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitEscapeCode(this);
         }
     }
 
