@@ -1,7 +1,6 @@
 package parser;
 
 import lexer.Token;
-import lexer.TokenType;
 
 import java.util.List;
 
@@ -14,6 +13,8 @@ public abstract class Statement {
         <R> R visitOutput(Output statement);
         <R> R visitInput(Input statement);
         <R> R visitVarDeclaration(VarDeclaration statement);
+        <R> R visitIfStatement(IfStatement statement);
+        <R> R visitBlockStatement(BlockStatement statement);
     }
     // < statement >    ->      < expr_statement >
     public static class Expr extends Statement {
@@ -71,6 +72,36 @@ public abstract class Statement {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitVarDeclaration(this);
+        }
+    }
+
+    public static class IfStatement extends Statement{
+        public final Expression condition;
+        public final Statement thenBlock;
+        public final Statement elseBlock;
+
+        public IfStatement(Expression condition, Statement thenBlock, Statement elseBlock) {
+            this.condition = condition;
+            this.thenBlock = thenBlock;
+            this.elseBlock = elseBlock;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitIfStatement(this);
+        }
+    }
+
+    public static class BlockStatement extends Statement{
+        public final List<Statement> statements;
+
+        public BlockStatement(List<Statement> statements) {
+            this.statements = statements;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitBlockStatement(this);
         }
     }
 

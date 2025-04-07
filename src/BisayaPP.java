@@ -22,7 +22,7 @@ public class BisayaPP {
         filename = args[0] + sc.nextLine() + ".bpp";
 
         try {
-            new Interpreter().interpret(
+//            new Interpreter().interpret(
                     new Parser(
                             new Lexer(
                                     Files.readAllLines(
@@ -33,7 +33,7 @@ public class BisayaPP {
                                     )
                             ).readlines()
                     ).parse()
-            )
+//            )
             ;
         } catch (IOException e) {
             System.out.println("Unable to read file: " + filename);

@@ -62,9 +62,9 @@ public enum TokenType {
                             /// this is a comment
 
     // CONDITIONAL
-    BLOCK,                  // PUNDOK
-    OPEN_BRACKET,
-    CLOSE_BRACKET,
+    BLOCK,                  // : PUNDOK
+    OPEN_BRACES,            // : {}
+    CLOSE_BRACES,
 
     IF,                     // : KUNG
     ELSE,                   // : KUNG WALA
@@ -76,6 +76,9 @@ public enum TokenType {
     DO,                     // : BUHAT
     WHILE,                  // : SAMTANG
     FOR,                    // : ALANG SA
+
+    BREAK,                  // : UNDANG
+    CONTINUE,               // : PADAYUN
 
     NONE
 }

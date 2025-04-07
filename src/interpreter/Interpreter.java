@@ -232,6 +232,16 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
 
+    @Override
+    public <R> R visitIfStatement(Statement.IfStatement statement) {
+        return null;
+    }
+
+    @Override
+    public <R> R visitBlockStatement(Statement.BlockStatement statement) {
+        return null;
+    }
+
     private boolean isTrue(Object o){
         return o == null ? false :
                 o instanceof Boolean ? (boolean)o : false;

@@ -6,9 +6,14 @@
     < statements >          ->      < statement > | < statements >
     -- each line is a statement already, so mahug automatic shag new line
 
-    < statement >           ->      < output_statement >  |
-                                    < input_statement >   |
-                                    < var_declare >       |
+    < statement >           ->      < output_statement >    |
+                                    < input_statement >     |
+                                    < var_declare >         |
+                                    < block_statement >     |
+                                    < if_statement >        |
+                                    < while_statement >     |
+                                    < break_statement >     |
+                                    < continue_statement >  |
                                     < expr_statement >
 
     < expr_statement >      ->      < expression >
@@ -51,6 +56,12 @@
     < output_statement >    ->      OUTPUT COLON < expression >
 
     < input_statement >     ->      INPUT COLON IDENTIFIER (COMMA IDENTIFIER)*
+
+    < if_statement >        ->      IF ARITH_OPEN_P < BOOL expression> ARITH_CLOSE_P < block_statement >
+
+    < while_statement >     ->      WHILE ARITH_OPEN_P < BOOL expression > ARITH_CLOSE_P < block_statement >
+
+    < block_statement >     ->      BLOCK OPEN_BRACES < statements > CLOSE_BRACES
 
 */
 

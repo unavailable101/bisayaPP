@@ -104,4 +104,27 @@ class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor<String
                 statement.initialization!=null ? printExpr(statement.initialization) : "nil"
         );
     }
+
+    @Override
+    public String visitIfStatement(Statement.IfStatement statement) {
+        String conditionStr = statement.condition != null ? printExpr(statement.condition) : "nil";
+        String thenStr = statement.thenBlock != null ? printStatement(statement.thenBlock) : "nil";
+        String elseStr = statement.elseBlock != null ? printStatement(statement.elseBlock) : "nil";
+
+        return parenthesizeStmt(
+                "If Statement:",
+                "\n\t\t condition: " + conditionStr,
+                "\n\t\t then: " + thenStr,
+                "\n\t\t else: " + elseStr
+        );
+    }
+
+    @Override
+    public String visitBlockStatement(Statement.BlockStatement statement) {
+        StringBuilder block = new StringBuilder();
+
+        for (Statement stmt : statement.statements) block.append("\n\t\t").append(printStatement(stmt));
+
+        return parenthesizeStmt("Block Statements", block.toString());
+    }
 }

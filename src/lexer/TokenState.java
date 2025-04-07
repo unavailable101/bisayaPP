@@ -18,6 +18,8 @@ class TokenState {
         BRACKET,         //open brackets
         SINGLE_Q,
         DOUBLE_Q,
+        BRACES_OPEN,
+        BRACES_CLOSE,
 
         // OPERATIONS
         MINUS,            // :  -   -- either - (arith_op) or --(comment)
@@ -38,6 +40,10 @@ class TokenState {
             if (Character.isLowerCase(c)) state = STATE.LOWER_CASE;
         } else {
             switch (c) {
+                case '{':
+                    state = STATE.BRACES_OPEN; break;
+                case '}':
+                    state = STATE.BRACES_CLOSE; break;
                 case ':':
                     state = STATE.COLON;
                     break;

@@ -71,6 +71,14 @@ public class Parser {
                 nextToken(tokens);
                 statements.addAll(inputStatement(tokens));
                 break;
+            case IF:
+                nextToken(tokens);
+                statements.add(ifStatement(tokens));
+                break;
+            case BLOCK:
+                nextToken(tokens);
+                statements.add(blockStatements(tokens));
+                break;
             default:
                 statements.add(exprStatement(tokens));
         }
@@ -138,6 +146,53 @@ public class Parser {
             }
 
             return inputs;
+    }
+
+    private Statement ifStatement(List<Token> tokens){
+
+        //condition
+        consume(currToken(tokens), ARITH_OPEN_P, "Walay '(' human sa KUNG keyword");
+        nextToken(tokens);
+        Expression cond = expression(tokens);
+        consume(currToken(tokens), ARITH_CLOSE_P, "Walay ')' human sa condition");
+//        nextToken(tokens);
+        System.out.println(currToken(tokens).getValue().toString());
+
+        Statement thenBlock = null;
+//        if (currToken(tokens).getType() == BLOCK) {
+//            nextToken(tokens);
+//            thenBlock = blockStatements(tokens);
+//        } else {
+//            statement(tokens);
+//            thenBlock = statements.removeLast();
+//        }
+
+        Statement elseBlock = null;
+        /*
+            TODO:
+                - perform else block here
+        */
+
+
+        return new Statement.IfStatement(cond, thenBlock, elseBlock);
+    }
+
+    private Statement blockStatements(List<Token> tokens){
+        consume(currToken(tokens), OPEN_BRACES, "Walay '{' human sa PUNDOK keyword");
+        List<Statement> stmts = new ArrayList<>();
+
+        while(nextToken(tokens).getType() != BRACKET_CLOSE){
+            int start = statements.size();
+
+            statement(tokens);
+
+            for (int i = start; i < statements.size(); i++) stmts.add(statements.get(i));
+            while(statements.size() > start) statements.removeLast();
+
+        }
+
+        consume(currToken(tokens), BRACKET_CLOSE, "Walay '}' human sa block statement");
+        return new Statement.BlockStatement(stmts);
     }
 
     // < expr_statement >   -> < expression >
@@ -353,7 +408,7 @@ public class Parser {
                 return new Expression.Group(expr);
 
         }
-
+//        return null;
         throw new RuntimeError(currToken(tokens).getLine(), "Expected expression");
     }
 

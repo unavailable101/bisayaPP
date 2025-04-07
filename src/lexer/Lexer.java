@@ -45,6 +45,9 @@ public class Lexer {
         KEYWORDS.put("SAMTANG", WHILE);
         KEYWORDS.put("ALANG", FOR);         // temporary rani, in the tokenKeywords, it will first check if naa bhay "SA" after "ALANG"
 
+        KEYWORDS.put("UNDANG", BREAK);
+        KEYWORDS.put("PADAYUN", CONTINUE);
+
         KEYWORDS.put(null, NONE);     // wa man ni gamit oi, di man ni ma recognize
     }
 
@@ -116,17 +119,20 @@ public class Lexer {
             if (KEYWORDS.containsKey(lexeme)) {
                 type = KEYWORDS.get(lexeme);
                 if (type == IF){
-                    if (lexemes.get(i+1).equals("DILI")){
-                        lexeme += " " + lexemes.get(i+1);
-                    }
-                    if (lexemes.get(i+1).equals("WALA")){
-                        lexeme += " " + lexemes.get(i+1);
+                    if (lexemes.size() > i+1){
+                        if (lexemes.get(i + 1).equals("DILI")) {
+                            lexeme += " " + lexemes.get(i + 1);
+                        }
+                        if (lexemes.get(i + 1).equals("WALA")) {
+                            lexeme += " " + lexemes.get(i + 1);
+                        }
                     }
                 }
                 if (type == FOR){
                     if (lexemes.get(i+1).equals("SA")) lexeme = lexeme + " " + lexemes.get(++i);
                     else if (lexemes.get(i+1).contains("SA")) {
-                        handleForLoop(line);
+//                        handleForLoop(line, lineToken);
+                        handleForLoop(lexemes, lineToken);
                         return;
                     } else throw new SyntaxError(currLine, "Kulang ang keword. Dapat 'ALANG SA'");
                 }
@@ -208,6 +214,15 @@ public class Lexer {
                 // symbols
                 case STATE.COLON:
                     lineToken.add(new Token(COLON, String.valueOf(lexemes.charAt(i))));
+                    setLine(lineToken);
+                    break;
+
+                case STATE.BRACES_OPEN:
+                    lineToken.add(new Token(OPEN_BRACES, String.valueOf(lexemes.charAt(i))));
+                    setLine(lineToken);
+                    break;
+                case STATE.BRACES_CLOSE:
+                    lineToken.add(new Token(CLOSE_BRACES, String.valueOf(lexemes.charAt(i))));
                     setLine(lineToken);
                     break;
 
@@ -301,19 +316,9 @@ public class Lexer {
         String lexeme = str.toString();
         boolean foundType = false;
 
-        switch (lexeme){
-            case "UG":
-                lineToken.add(new Token(LOG_AND, lexeme));
-                foundType = true;
-                break;
-            case "O":
-                lineToken.add(new Token(LOG_OR, lexeme));
-                foundType = true;
-                break;
-            case "DILI":
-                lineToken.add(new Token(LOG_NOT, lexeme));
-                foundType = true;
-                break;
+        if (KEYWORDS.containsKey(lexeme)) {
+            lineToken.add(new Token(KEYWORDS.get(lexeme), lexeme));
+            foundType = true;
         }
 
         if (!foundType) {
@@ -437,12 +442,27 @@ public class Lexer {
         mga walay spaces except sa ALANG lang
         so need sha i handle as a whole line
         and expect that this whole line is a declaration statement na for loop ni sha
+
+        pero consider sad na nay case wherein di sha mu hatag og expression rar
+
+        same silag idea ni checkIO but the thing here is 2 words mn ghud ni sha
+        unlike sa checkIO na tig 1 word ra
     */
-    private void handleForLoop(String lexemes){
+//    private void handleForLoop(String lexemes, List<Token> lineToken){
+    private void handleForLoop(List<String> lexemes, List<Token> lineToken){
+        /*
+            TODO:
+                - separate the keyword ALANG SA and the expression
+                - add new Token with the token type FOR and the value "ALANG SA" with the space
+                - after keyword ALANG SA, create a substring from after the keyword ALANG SA to the last character or the last index of the string
+
+                - example:
+                    ALANG SA(int i = 0; i<size; i++)
+                            ^ from here to         ^ - is a substring, pass this to tokenizeParts
+
+                - in short, pag extract ragyud sa keyword ang buhaton dire
+        */
         System.out.println(lexemes);
-        int start = lexemes.indexOf('(');
-        System.out.println(lexemes.substring(0,start));
-        System.out.println(lexemes.substring(start));
     }
 
 }
