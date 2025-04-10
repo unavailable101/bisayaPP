@@ -398,7 +398,8 @@ public class Lexer {
             setLine(lineToken);
             lineToken.add(new Token(COLON, lexeme.substring(lexeme.length()-1)));
             setLine(lineToken);
-        } else throw new LexicalError(currLine,"Dili maila na keyword '" + lexeme + "'. " +
+        } else if (lexeme.contains(":")) tokenizeParts(lexeme, lineToken);
+        else throw new LexicalError(currLine,"Dili maila na keyword '" + lexeme + "'. " +
                 (lexeme.contains("IPAKITA") ? "Imo gipasabot ba kay 'IPAKITA'?" :
                         (lexeme.contains("DAWAT") ? "Imo gipasabot ba kay 'DAWAT'?" : "")
                 )
