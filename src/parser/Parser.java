@@ -1,6 +1,5 @@
 package parser;
 
-import errors.Sayop;
 import lexer.Token;
 import lexer.TokenType;
 
@@ -13,24 +12,27 @@ import static lexer.TokenType.*;
 public class Parser {
     private final List<List<Token>> lineTokens;
     private int line;
-    int indx = 0;
+    private int size;
+    int indx;
+    int cl;
 
     private final List<Statement> statements;
 
     public Parser(List<List<Token>> lineTokens) {
         this.lineTokens = lineTokens;
-        this.line = -1;
         this.statements = new ArrayList<>();
+        this.line = 0;
+        this.size = 0;
+        this.indx = 0;
+        this.cl = 0;
     }
 
     public List<Statement> parse(){
 
-        int size = 0;
-
         if (lineTokens.getFirst().getFirst() != lineTokens.getFirst().getLast() &&
                 lineTokens.getFirst().getFirst().getType() != START_PROG)
             throw new SyntaxError(lineTokens.getFirst().getFirst().getLine(),"Expected 'SUGOD' before this line");
-        else ++line;
+        else line = 1;
 
 
         if (lineTokens.getLast().getFirst() != lineTokens.getLast().getLast() &&
@@ -38,23 +40,152 @@ public class Parser {
             throw new SyntaxError(lineTokens.getLast().getLast().getLine(), "Expected 'KATAPUSAN' after this line");
         else size = lineTokens.size()-1;
 
-        List<Token> currLine;
-        int cl = 0;
-        for (int i = 1; i < size; i++) {
-            currLine = lineTokens.get(i);
-            statement(currLine);
-            indx = 0;   //reset to 0 if mana nag read ang usa ka line
-            System.out.println("Successful parsed line " + currLine.getFirst().getLine());
+        parseStatements();
 
-            while (cl < statements.size()){
+        return statements;
+    }
+
+    private void parseStatements(){
+        List<Token> currLine;
+
+        while (line < size) {
+            currLine = lineTokens.get(line);
+//            statement(currLine);
+            if (
+                    currToken(currLine).getType() == IF ||
+                    currToken(currLine).getType() == WHILE
+            ) controlStruct();
+            else {
+                statement(currLine);
+                line++;
+            }
+
+            indx = 0;   //reset to 0 if mana nag read ang usa ka line
+
+            System.out.println("Successful parsed line " + currLine.getFirst().getLine());
+            while (cl < statements.size()) {
                 System.out.println(new ASTPrinter().printStatement(statements.get(cl)));
                 cl++;
             }
             System.out.println();
-
         }
+
         System.out.println("------------------ OUTPUT --------------------");
-        return statements;
+    }
+
+    private void controlStruct(){
+            List<Token> curr = lineTokens.get(line);
+            int save = line;
+
+            Expression condition;
+            Statement thenBlock;
+
+            switch (currToken(curr).getType()){
+                case IF:
+                    nextToken(curr);
+                    condition = boolCondition(curr, prevToken(curr).getValue().toString());
+                    Statement elseBlock = null;
+
+                    if (indx == curr.size()-1) {
+                        ++line;
+                        if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Walay statement/s human sa condition");
+                        curr = lineTokens.get(line);
+                        indx = 0;
+
+                        if (currToken(curr).getType() == BLOCK){
+                            nextToken(lineTokens.get(line));
+                            thenBlock = blockStatements();
+                        } else {
+                            statement(curr);
+                            thenBlock = statements.removeLast();
+                            ++line;
+                        }
+
+                    } else {
+                        statement(curr);
+                        thenBlock = statements.removeLast();
+                        ++line;
+                    }
+                    //TODO: handle elseBlock here
+                    // tip: keyword KUNG DILI can be treated as an elseBlock
+                    // where elseBlock = Statement.IfStatement(condition, thenBlock, elseBlock)
+                    // pero kamo nay bahala unsaon hehe
+                    statements.add(new Statement.IfStatement(condition, thenBlock, elseBlock));
+                    break;
+                case WHILE:
+                    nextToken(curr);
+                    condition = boolCondition(curr, prevToken(curr).getValue().toString());
+
+                    if (indx == curr.size()-1) {
+                        ++line;
+                        if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Walay statement/s human sa condition");
+                        curr = lineTokens.get(line);
+                        indx = 0;
+
+                        if (currToken(curr).getType() == BLOCK){
+                            nextToken(lineTokens.get(line));
+                            thenBlock = blockStatements();
+                        } else {
+                            statement(curr);
+                            thenBlock = statements.removeLast();
+                            ++line;
+                        }
+
+                    } else {
+                        statement(curr);
+                        thenBlock = statements.removeLast();
+                        ++line;
+                    }
+                    statements.add(new Statement.WhileStatement(condition, thenBlock));
+                    break;
+
+                // TODO: add other keywords here (e.g. FOR, DO)
+            }
+        if (line-save == 1) --line;
+    }
+
+    private Statement blockStatements(){
+        consume(currToken(lineTokens.get(line)), OPEN_BRACES, "Walay '{' human sa PUNDOK keyword");
+
+        List<Statement> stmts = new ArrayList<>();
+
+        if (indx == lineTokens.get(line).size()-1) {
+            ++line;
+            indx = 0;
+        } else nextToken(lineTokens.get(line));
+
+        while(line < size){
+
+            if (currToken(lineTokens.get(line)).getType() == CLOSE_BRACES) break;
+
+            int start = statements.size();
+
+            if (
+                    currToken(lineTokens.get(line)).getType() == IF ||
+                    currToken(lineTokens.get(line)).getType() == WHILE
+            ) controlStruct();
+            else {
+                statement(lineTokens.get(line));
+                ++line;
+                indx = 0;
+
+                if (line >= size){
+                    throw new SyntaxError(lineTokens.get(line-1).getLast().getLine(),
+                            "Walay '}' human sa block statement");
+                }
+            }
+            for (int i = start; i < statements.size(); i++) stmts.add(statements.get(i));
+            while (statements.size() > start) statements.removeLast();
+        }
+
+        consume(currToken(lineTokens.get(line)), CLOSE_BRACES, "Walay '}' human sa block statement");
+
+        if (indx == lineTokens.get(line).size() - 1) {
+            ++line;
+            indx = 0;
+        } else nextToken(lineTokens.get(line));
+
+        return new Statement.BlockStatement(stmts);
     }
 
     private void statement(List<Token> tokens){
@@ -70,14 +201,6 @@ public class Parser {
             case INPUT:
                 nextToken(tokens);
                 statements.addAll(inputStatement(tokens));
-                break;
-            case IF:
-                nextToken(tokens);
-                statements.add(ifStatement(tokens));
-                break;
-            case BLOCK:
-                nextToken(tokens);
-                statements.add(blockStatements(tokens));
                 break;
             default:
                 statements.add(exprStatement(tokens));
@@ -127,7 +250,6 @@ public class Parser {
             nextToken(tokens);
             Expression expr = expression(tokens);
             return new Statement.Output(expr);
-
     }
 
     private List<Statement> inputStatement(List<Token> tokens){
@@ -148,51 +270,13 @@ public class Parser {
             return inputs;
     }
 
-    private Statement ifStatement(List<Token> tokens){
-
-        //condition
-        consume(currToken(tokens), ARITH_OPEN_P, "Walay '(' human sa KUNG keyword");
+    private Expression boolCondition(List<Token> tokens, String keyword){
+//        System.out.println(keyword);
+        consume(currToken(tokens), ARITH_OPEN_P, "Walay '(' human sa "+ keyword +" keyword");
         nextToken(tokens);
         Expression cond = expression(tokens);
         consume(currToken(tokens), ARITH_CLOSE_P, "Walay ')' human sa condition");
-//        nextToken(tokens);
-        System.out.println(currToken(tokens).getValue().toString());
-
-        Statement thenBlock = null;
-//        if (currToken(tokens).getType() == BLOCK) {
-//            nextToken(tokens);
-//            thenBlock = blockStatements(tokens);
-//        } else {
-//            statement(tokens);
-//            thenBlock = statements.removeLast();
-//        }
-
-        Statement elseBlock = null;
-        /*
-            TODO:
-                - perform else block here
-        */
-
-
-        return new Statement.IfStatement(cond, thenBlock, elseBlock);
-    }
-
-    private Statement blockStatements(List<Token> tokens){
-        consume(currToken(tokens), OPEN_BRACES, "Walay '{' human sa PUNDOK keyword");
-        List<Statement> stmts = new ArrayList<>();
-
-        while(nextToken(tokens).getType() != BRACKET_CLOSE){
-            int start = statements.size();
-
-            statement(tokens);
-
-            for (int i = start; i < statements.size(); i++) stmts.add(statements.get(i));
-            while(statements.size() > start) statements.removeLast();
-
-        }
-
-        consume(currToken(tokens), BRACKET_CLOSE, "Walay '}' human sa block statement");
-        return new Statement.BlockStatement(stmts);
+        return cond;
     }
 
     // < expr_statement >   -> < expression >
@@ -409,7 +493,7 @@ public class Parser {
 
         }
 //        return null;
-        throw new RuntimeError(currToken(tokens).getLine(), "Expected expression");
+        throw new RuntimeError(currToken(tokens).getLine(), "Expected expression" + currToken(tokens));
     }
 
     private Token nextToken (List<Token> tokens){

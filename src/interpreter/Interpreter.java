@@ -234,11 +234,20 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public <R> R visitIfStatement(Statement.IfStatement statement) {
+        if (isTrue(evaluate(statement.condition))) execute(statement.thenBlock);
+        else if (statement.elseBlock != null) execute(statement.elseBlock);
         return null;
     }
 
     @Override
     public <R> R visitBlockStatement(Statement.BlockStatement statement) {
+        for (Statement stmt : statement.statements) execute(stmt);
+        return null;
+    }
+
+    @Override
+    public <R> R visitWhileStatement(Statement.WhileStatement statement) {
+        while (isTrue(evaluate(statement.condition))) execute(statement.thenBlock);
         return null;
     }
 
@@ -258,9 +267,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         throw new RuntimeError(line, "Ang "+ o.toString() + " kay " + typeof(o) + ",dili number");
     }
 
-    // ambot if kailangan bha same datatype ang left and right expressions
-    // pwede rani ma change
-    // rararararararar
     private char ifNumOperands (Object left, Object right, int line){
         if ( left instanceof Integer  && right instanceof Integer) return 'i';
         if (

@@ -15,6 +15,7 @@ public abstract class Statement {
         <R> R visitVarDeclaration(VarDeclaration statement);
         <R> R visitIfStatement(IfStatement statement);
         <R> R visitBlockStatement(BlockStatement statement);
+        <R> R visitWhileStatement(WhileStatement statement);
     }
     // < statement >    ->      < expr_statement >
     public static class Expr extends Statement {
@@ -75,6 +76,20 @@ public abstract class Statement {
         }
     }
 
+    public static class BlockStatement extends Statement{
+
+        public final List<Statement> statements;
+        public BlockStatement(List<Statement> statements) {
+            this.statements = statements;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitBlockStatement(this);
+        }
+
+
+    }
     public static class IfStatement extends Statement{
         public final Expression condition;
         public final Statement thenBlock;
@@ -91,18 +106,18 @@ public abstract class Statement {
             return visitor.visitIfStatement(this);
         }
     }
+    public static class WhileStatement extends Statement{
+        public final Expression condition;
+        public final Statement thenBlock;
 
-    public static class BlockStatement extends Statement{
-        public final List<Statement> statements;
-
-        public BlockStatement(List<Statement> statements) {
-            this.statements = statements;
+        public WhileStatement(Expression condition, Statement thenBlock) {
+            this.condition = condition;
+            this.thenBlock = thenBlock;
         }
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
-            return visitor.visitBlockStatement(this);
+            return visitor.visitWhileStatement(this);
         }
     }
-
 }

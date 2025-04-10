@@ -113,9 +113,9 @@ class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor<String
 
         return parenthesizeStmt(
                 "If Statement:",
-                "\n\t\t condition: " + conditionStr,
-                "\n\t\t then: " + thenStr,
-                "\n\t\t else: " + elseStr
+                "\n\t condition: " + conditionStr,
+                "\n\t then: " + thenStr,
+                "\n\t else: " + elseStr
         );
     }
 
@@ -123,8 +123,20 @@ class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor<String
     public String visitBlockStatement(Statement.BlockStatement statement) {
         StringBuilder block = new StringBuilder();
 
-        for (Statement stmt : statement.statements) block.append("\n\t\t").append(printStatement(stmt));
+        for (Statement stmt : statement.statements) block.append("\n\t\t\t\t").append(printStatement(stmt));
 
         return parenthesizeStmt("Block Statements", block.toString());
+    }
+
+    @Override
+    public String visitWhileStatement(Statement.WhileStatement statement) {
+        String conditionStr = statement.condition != null ? printExpr(statement.condition) : "nil";
+        String thenStr = statement.thenBlock != null ? printStatement(statement.thenBlock) : "nil";
+
+        return parenthesizeStmt(
+                "While Statement:",
+                "\n\t condition: " + conditionStr,
+                "\n\t then: " + thenStr
+        );
     }
 }
