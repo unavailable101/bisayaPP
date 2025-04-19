@@ -73,74 +73,184 @@ public class Parser {
         System.out.println("------------------ OUTPUT --------------------");
     }
 
+//    private Statement parseNextBlockOrStatement() throws SyntaxError {
+//        List<Token> curr = lineTokens.get(line);
+//
+//        System.out.println("Parsing block/statement at line " + line);
+//        System.out.println(curr.size());
+//        if (indx == curr.size() - 1) {
+//            System.out.println("Inside the if: ");
+//            ++line;
+//            if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Walay statement/s human sa condition");
+//            curr = lineTokens.get(line);
+//            indx = 0;
+//
+//            if (currToken(curr).getValue().equals("PUNDOK") && currToken(curr).getType() == BLOCK) {
+//                nextToken(curr);
+//
+//                return blockStatements();
+//            } else {
+//                statement(curr);
+//                ++line;
+//                return statements.removeLast();
+//            }
+//        } else {
+//            statement(curr);
+//            ++line;
+//            return statements.removeLast();
+//        }
+//    }
+
+
+
     private void controlStruct(){
-            List<Token> curr = lineTokens.get(line);
-            int save = line;
+        List<Token> curr = lineTokens.get(line);
+        int save = line;
 
-            Expression condition;
-            Statement thenBlock;
+        switch (currToken(curr).getType()){
+            case IF:
+            case IF_ELSE:
+                Token baseToken = currToken(curr);
+                Expression condition;
+                Statement thenBlock;
+                Statement elseBlock = null;
 
-            switch (currToken(curr).getType()){
-                case IF:
-                    nextToken(curr);
-                    condition = boolCondition(curr, prevToken(curr).getValue().toString());
-                    Statement elseBlock = null;
+                if (baseToken.getValue().equals("KUNG WALA")) {
+                    throw new SyntaxError(baseToken.getLine(), "KUNG WALA cannot be used as a standalone if-statement.");
+                }
 
-                    if (indx == curr.size()-1) {
+                nextToken(curr);
+                condition = boolCondition(curr, baseToken.getValue().toString());
+
+//                thenBlock = parseNextBlockOrStatement();
+                System.out.println("Parsing block/statement at line " + line);
+                System.out.println(curr.size());
+
+                if (indx == curr.size() - 1) {
+                    System.out.println("Inside the if: ");
+                    ++line;
+                    if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Walay statement/s human sa condition");
+                    curr = lineTokens.get(line);
+                    indx = 0;
+
+                    if (currToken(curr).getValue().equals("PUNDOK") && currToken(curr).getType() == BLOCK) {
+                        nextToken(curr);
+
+                        thenBlock = blockStatements();
+                    } else {
+                        statement(curr);
                         ++line;
-                        if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Walay statement/s human sa condition");
-                        curr = lineTokens.get(line);
-                        indx = 0;
+                        thenBlock = statements.removeLast();
+                    }
+                } else {
+                    statement(curr);
+                    ++line;
+                    thenBlock = statements.removeLast();
+                }
 
-                        if (currToken(curr).getType() == BLOCK){
-                            nextToken(lineTokens.get(line));
-                            thenBlock = blockStatements();
+                //TODO: handle elseBlock here
+                // tip: keyword KUNG DILI can be treated as an elseBlock
+                // where elseBlock = Statement.IfStatement(condition, thenBlock, elseBlock)
+                // pero kamo nay bahala unsaon hehe
+
+                while (line < size) {
+                    curr = lineTokens.get(line);
+                    indx = 0;
+
+                    Token token = currToken(curr);
+
+                    if (token.getType() == IF_ELSE && token.getValue().equals("KUNG DILI")) {
+                        nextToken(curr);
+                        Expression elifCondition = boolCondition(curr, prevToken(curr).getValue().toString());
+                        Statement elifBlock;
+                        if (indx == curr.size() - 1) {
+                            ++line;
+                            if (line >= size)
+                                throw new SyntaxError(curr.getLast().getLine(), "Walay statement/s human sa KUNG DILI");
+                            curr = lineTokens.get(line);
+                            indx = 0;
+
+                            if (currToken(curr).getValue().equals("PUNDOK") && currToken(curr).getType() == BLOCK) {
+                                nextToken(curr);
+                                elifBlock = blockStatements();
+                            } else {
+                                statement(curr);
+                                elifBlock = statements.removeLast();
+                                ++line;
+                            }
                         } else {
                             statement(curr);
-                            thenBlock = statements.removeLast();
+                            elifBlock = statements.removeLast();
                             ++line;
                         }
 
+                        elseBlock = new Statement.IfStatement(elifCondition, elifBlock, elseBlock);
+                    } else if (token.getType() == ELSE && token.getValue().equals("KUNG WALA")) {
+                        System.out.println("Found KUNG WALA at line " + token.getLine());
+
+                        nextToken(curr);
+
+                        // Gubaon ang nextToken(curr);
+                        if (indx >= curr.size()) {
+                            ++line;
+                            indx = 0;
+                            if (line < lineTokens.size()) {
+                                curr = lineTokens.get(line);
+                            } else {
+                                throw new SyntaxError(token.getLine(), "Expected block or statement after KUNG WALA");
+                            }
+                        }
+
+                        Token nextToken = currToken(curr);
+                        System.out.println("Next token after KUNG WALA: " + nextToken.getValue());
+
+                        Statement finalElseBlock;
+                        if (currToken(curr).getValue().equals("PUNDOK") && currToken(curr).getType() == BLOCK) {
+                            nextToken(curr);
+                            finalElseBlock = blockStatements();
+                        } else {
+                            statement(curr);
+                            finalElseBlock = statements.removeLast();
+                            ++line;
+                        }
+
+                        elseBlock = finalElseBlock;
+                        break;
+                    } else {
+                        break;
+                    }
+                }
+                statements.add(new Statement.IfStatement(condition, thenBlock, elseBlock));
+                break;
+            case WHILE:
+                nextToken(curr);
+                condition = boolCondition(curr, prevToken(curr).getValue().toString());
+
+                if (indx == curr.size()-1) {
+                    ++line;
+                    if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Walay statement/s human sa condition");
+                    curr = lineTokens.get(line);
+                    indx = 0;
+
+                    if (currToken(curr).getType() == BLOCK){
+                        nextToken(lineTokens.get(line));
+                        thenBlock = blockStatements();
                     } else {
                         statement(curr);
                         thenBlock = statements.removeLast();
                         ++line;
                     }
-                    //TODO: handle elseBlock here
-                    // tip: keyword KUNG DILI can be treated as an elseBlock
-                    // where elseBlock = Statement.IfStatement(condition, thenBlock, elseBlock)
-                    // pero kamo nay bahala unsaon hehe
-                    statements.add(new Statement.IfStatement(condition, thenBlock, elseBlock));
-                    break;
-                case WHILE:
-                    nextToken(curr);
-                    condition = boolCondition(curr, prevToken(curr).getValue().toString());
 
-                    if (indx == curr.size()-1) {
-                        ++line;
-                        if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Walay statement/s human sa condition");
-                        curr = lineTokens.get(line);
-                        indx = 0;
+                } else {
+                    statement(curr);
+                    thenBlock = statements.removeLast();
+                    ++line;
+                }
+                statements.add(new Statement.WhileStatement(condition, thenBlock));
+                break;
 
-                        if (currToken(curr).getType() == BLOCK){
-                            nextToken(lineTokens.get(line));
-                            thenBlock = blockStatements();
-                        } else {
-                            statement(curr);
-                            thenBlock = statements.removeLast();
-                            ++line;
-                        }
-
-                    } else {
-                        statement(curr);
-                        thenBlock = statements.removeLast();
-                        ++line;
-                    }
-                    statements.add(new Statement.WhileStatement(condition, thenBlock));
-                    break;
-
-                // TODO: add other keywords here (e.g. FOR, DO)
-            }
+            // TODO: add other keywords here (e.g. FOR, DO)
+        }
         if (line-save == 1) --line;
     }
 

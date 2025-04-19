@@ -48,6 +48,11 @@ public class Lexer {
         KEYWORDS.put("UNDANG", BREAK);
         KEYWORDS.put("PADAYUN", CONTINUE);
 
+        // Added KUNG DILI and KUNG WALA KEYWORDS
+        KEYWORDS.put("KUNG DILI", IF_ELSE);
+        KEYWORDS.put("KUNG WALA", ELSE);
+
+
         KEYWORDS.put(null, NONE);     // wa man ni gamit oi, di man ni ma recognize
     }
 
@@ -118,23 +123,80 @@ public class Lexer {
 
             if (KEYWORDS.containsKey(lexeme)) {
                 type = KEYWORDS.get(lexeme);
-                if (type == IF){
-                    if (lexemes.size() > i+1){
-                        if (lexemes.get(i + 1).equals("DILI")) {
-                            lexeme += " " + lexemes.get(i + 1);
+//                if (type == IF){
+//                    if (lexemes.size() > i+1){
+//                        if (lexemes.get(i + 1).equals("DILI")) {
+//                            lexeme += " " + lexemes.get(i + 1);
+//                        } else if (lexemes.get(i+1).contains("DILI")){
+//                            //todo
+//                        }
+//                        if (lexemes.get(i + 1).equals("WALA")) {
+//                            lexeme += " " + lexemes.get(i + 1);
+//                        } else if (lexemes.get(i+1).contains("WALA")){
+//                            //todo
+//                        }
+//                        /*
+//
+//                            KUNG DILI(expression)
+//                            KUNG DILI( expression)
+//                            KUNG
+//                            [KUNG], [DILI(expresssion)]
+//                                     ^
+//                                     extract DILI ug (expression)
+//                                     DILI, (expression)
+//                                            ^ call tokenParts
+//                        */
+//                    }
+//                }
+                if (type == IF) {
+                    if (lexemes.size() > i + 1) {
+                        String nextLexeme = lexemes.get(i + 1);
+
+                        if (nextLexeme.equals("DILI")) {
+                            lexeme += " " + nextLexeme;
+                            type = KEYWORDS.get("KUNG DILI");
+                            i++;
+                        } else if (nextLexeme.startsWith("DILI(")) {
+                            lexeme += " DILI";
+                            type = KEYWORDS.get("KUNG DILI");
+
+                            String remaining = nextLexeme.substring("DILI".length());
+                            lexemes.set(i + 1, remaining);
+                        } else if (nextLexeme.equals("WALA")) {
+                            lexeme += " " + nextLexeme;
+                            type = KEYWORDS.get("KUNG WALA");
+                            i++;
                         }
-                        if (lexemes.get(i + 1).equals("WALA")) {
-                            lexeme += " " + lexemes.get(i + 1);
-                        }
+//                        else if (nextLexeme.startsWith("WALA(")) {
+//                            lexeme += " WALA";
+//                            type = KEYWORDS.get("KUNG WALA");
+//
+//                            String remaining = nextLexeme.substring("WALA".length());
+//                            lexemes.set(i + 1, remaining);
+//                        }
                     }
                 }
+//                if (type == FOR){
+//                    if (lexemes.get(i+1).equals("SA")) lexeme = lexeme + " " + lexemes.get(++i);
+//                    else if (lexemes.get(i+1).contains("SA")) {
+////                        handleForLoop(line, lineToken);
+//                        handleForLoop(lexemes, lineToken);
+//                        return;
+//                    } else throw new SyntaxError(currLine, "Kulang ang keyword. Dapat 'ALANG SA'");
+//                }
                 if (type == FOR){
-                    if (lexemes.get(i+1).equals("SA")) lexeme = lexeme + " " + lexemes.get(++i);
-                    else if (lexemes.get(i+1).contains("SA")) {
-//                        handleForLoop(line, lineToken);
-                        handleForLoop(lexemes, lineToken);
-                        return;
-                    } else throw new SyntaxError(currLine, "Kulang ang keword. Dapat 'ALANG SA'");
+                    if (lexemes.size() > i + 1){
+                        if (lexemes.get(i + 1).equals("SA")) {
+                            lexeme += " " + lexemes.get(++i);  // merge FOR SA
+                        } else if (lexemes.get(i + 1).contains("SA")) {
+                            handleForLoop(lexemes, lineToken);
+                            return;
+                        } else {
+                            throw new SyntaxError(currLine, "Kulang ang keyword. Dapat 'ALANG SA'");
+                        }
+                    } else {
+                        throw new SyntaxError(currLine, "Kulang ang keyword. Dapat 'ALANG SA'");
+                    }
                 }
             }
             else {
@@ -174,11 +236,11 @@ public class Lexer {
             STATE state = ts.tokenState(lexemes.charAt(i));
 
             switch(state){
-                case STATE.WHITESPACE:
+                case WHITESPACE:
                     break;
 
                 // literals, identifiers, and keywords
-                case STATE.UPPER_CASE :
+                case UPPER_CASE :
                     // assuming these are other keywords like UG, O, DILI
                     while (i < lexemes.length() && Character.isUpperCase(lexemes.charAt(i))){
                         if (i >= lexemes.length()) throw new LexicalError(currLine, "Unterminated character literal at position " + i);
@@ -188,8 +250,8 @@ public class Lexer {
                     --i;
                     addToken(lex, lineToken);
                     break;
-                case STATE.LOWER_CASE:
-                case STATE.UNDERSCORE:
+                case LOWER_CASE:
+                case UNDERSCORE:
                     //assume na variable/identifier ni siya
                     while (i < lexemes.length() && (Character.isLetterOrDigit(lexemes.charAt(i)) || lexemes.charAt(i) == '_')){
                         if (i >= lexemes.length()) throw new LexicalError(currLine,"Unterminated character literal at position " + i);
@@ -199,7 +261,7 @@ public class Lexer {
                     --i;
                     addToken(lex, lineToken);
                     break;
-                case STATE.NUMBER:
+                case NUMBER:
                     // integer or decimal
                     while(i < lexemes.length() && (Character.isDigit(lexemes.charAt(i)) || lexemes.charAt(i) == '.')){
                         if (i >= lexemes.length()) throw new LexicalError(currLine,"Unterminated character literal at position " + i);
@@ -212,7 +274,7 @@ public class Lexer {
                     break;
 
                 // symbols
-                case STATE.COLON:
+                case COLON:
                     lineToken.add(new Token(COLON, String.valueOf(lexemes.charAt(i))));
                     setLine(lineToken);
                     break;
@@ -226,7 +288,7 @@ public class Lexer {
                     setLine(lineToken);
                     break;
 
-                case STATE.BRACKET:
+                case BRACKET:
                     // DO NOT MODIFY! Unique ni sha
                     lineToken.add(new Token(BRACKET_OPEN, String.valueOf(lexemes.charAt(i))));
                     setLine(lineToken);
@@ -238,19 +300,19 @@ public class Lexer {
                     lineToken.add(new Token(BRACKET_CLOSE, String.valueOf(lexemes.charAt(i))));
                     setLine(lineToken);
                     break;
-                case STATE.COMMA:
+                case COMMA:
                     lineToken.add(new Token(COMMA, String.valueOf(lexemes.charAt(i))));
                     setLine(lineToken);
                     break;
-                case STATE.CONCAT:
+                case CONCAT:
                     lineToken.add(new Token(CONCAT, String.valueOf(lexemes.charAt(i))));
                     setLine(lineToken);
                     break;
-                case STATE.NEW_LINE:
+                case NEW_LINE:
                     lineToken.add(new Token(NEW_LINE, String.valueOf(lexemes.charAt(i))));
                     setLine(lineToken);
                     break;
-                case STATE.SINGLE_Q:
+                case SINGLE_Q:
                     lex.append(lexemes.charAt(i));
                     isChar = true;
                     ++i;
@@ -263,7 +325,7 @@ public class Lexer {
                     --i;
                     addToken(lex, lineToken);
                     break;
-                case STATE.DOUBLE_Q:
+                case DOUBLE_Q:
                     lex.append(lexemes.charAt(i));
                     isString = true;
                     ++i;
@@ -278,9 +340,9 @@ public class Lexer {
                     break;
 
                 // operators
-                case STATE.ARITH_OP:
+                case ARITH_OP:
                     addOperations(String.valueOf(lexemes.charAt(i)), lineToken); break;
-                case STATE.MINUS:
+                case MINUS:
                     if (i+1 >= lexemes.length()) throw new RuntimeError(currLine, "Unterminated character literal");
                     if (lexemes.charAt(i+1) == '-'){
                         lineToken.add(new Token(COMMENT, lexemes.substring(i)));
@@ -289,15 +351,15 @@ public class Lexer {
                     }
                     addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
-                case STATE.GT:
+                case GT:
                     if (lexemes.length() > i+1 && lexemes.charAt(i+1) == '>' ||lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
                     else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
-                case STATE.LT:
+                case LT:
                     if (lexemes.length() > i+1 && lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
                     else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
-                case STATE.EQUALS:
+                case EQUALS:
                     if (lexemes.length() > i+1 && lexemes.charAt(i+1) == '=') addOperations(tco.createOp(lexemes.charAt(i),lexemes.charAt(++i)), lineToken);
                     else addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
                     break;
