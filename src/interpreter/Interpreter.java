@@ -234,10 +234,36 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public <R> R visitIfStatement(Statement.IfStatement statement) {
-        if (isTrue(evaluate(statement.condition))) execute(statement.thenBlock);
-        else if (statement.elseBlock != null) execute(statement.elseBlock);
+        // Evaluate the condition of the 'if' statement
+        System.out.println("statement.condition: " + statement.condition);
+        Object conditionResult = evaluate(statement.condition);
+        System.out.println("Condition Result: " + conditionResult);
+
+        // If the condition evaluates to true, execute the 'then' block
+        if (isTrue(conditionResult)) {
+            execute(statement.thenBlock);
+        }
+        // Check if there are multiple 'else if' blocks and evaluate each one in sequence
+        else {
+            for (int i = 0; i < statement.elseIfConditions.size(); i++) {
+                // Evaluate each 'else if' condition
+                Object elseIfCondition = evaluate(statement.elseIfConditions.get(i));
+                if (isTrue(elseIfCondition)) {
+                    // If a condition matches, execute the corresponding 'else if' block
+                    execute(statement.elseIfBlocks.get(i));
+                    return null; // Exit after executing the first matching 'else if'
+                }
+            }
+
+            // If no 'else if' blocks match, check if there is an 'else' block and execute it
+            if (statement.elseBlock != null) {
+                execute(statement.elseBlock);
+            }
+        }
+
         return null;
     }
+
 
     @Override
     public <R> R visitBlockStatement(Statement.BlockStatement statement) {

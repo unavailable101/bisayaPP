@@ -103,6 +103,11 @@ public abstract class Expression {
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitLiteral(this);
         }
+
+        @Override
+        public String toString() {
+            return "Lit(" + literal + ")";
+        }
     }
 
     // < expression >   -> < assign >
@@ -134,6 +139,11 @@ public abstract class Expression {
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitVariable(this);
         }
+
+        @Override
+        public String toString() {
+            return "Var(" + name.getValue() + ")";
+        }
     }
 
     public static class Compare extends Expression{
@@ -149,6 +159,11 @@ public abstract class Expression {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitCompare(this);
+        }
+
+        @Override
+        public String toString() {
+            return "(" + op.getValue() + " " + left + " " + right + ")";
         }
     }
 

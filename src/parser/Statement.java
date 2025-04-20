@@ -90,14 +90,20 @@ public abstract class Statement {
 
 
     }
-    public static class IfStatement extends Statement{
+
+    public static class IfStatement extends Statement {
         public final Expression condition;
         public final Statement thenBlock;
+        public final List<Expression> elseIfConditions;
+        public final List<Statement> elseIfBlocks;
         public final Statement elseBlock;
 
-        public IfStatement(Expression condition, Statement thenBlock, Statement elseBlock) {
+        public IfStatement(Expression condition, Statement thenBlock, List<Expression> elseIfConditions,
+                           List<Statement> elseIfBlocks, Statement elseBlock) {
             this.condition = condition;
             this.thenBlock = thenBlock;
+            this.elseIfConditions = elseIfConditions;
+            this.elseIfBlocks = elseIfBlocks;
             this.elseBlock = elseBlock;
         }
 
@@ -106,6 +112,7 @@ public abstract class Statement {
             return visitor.visitIfStatement(this);
         }
     }
+
     public static class WhileStatement extends Statement{
         public final Expression condition;
         public final Statement thenBlock;

@@ -105,18 +105,46 @@ class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor<String
         );
     }
 
+//    @Override
+//    public String visitIfStatement(Statement.IfStatement statement) {
+//        String conditionStr = statement.condition != null ? printExpr(statement.condition) : "nil";
+//        String thenStr = statement.thenBlock != null ? printStatement(statement.thenBlock) : "nil";
+//        String elseStr = statement.elseBlock != null ? printStatement(statement.elseBlock) : "nil";
+//
+//        return parenthesizeStmt(
+//                "If Statement:",
+//                "\n\t condition: " + conditionStr,
+//                "\n\t then: " + thenStr,
+//                "\n\t else: " + elseStr
+//        );
+//    }
+
     @Override
     public String visitIfStatement(Statement.IfStatement statement) {
+        StringBuilder builder = new StringBuilder();
+
         String conditionStr = statement.condition != null ? printExpr(statement.condition) : "nil";
         String thenStr = statement.thenBlock != null ? printStatement(statement.thenBlock) : "nil";
-        String elseStr = statement.elseBlock != null ? printStatement(statement.elseBlock) : "nil";
 
-        return parenthesizeStmt(
-                "If Statement:",
-                "\n\t condition: " + conditionStr,
-                "\n\t then: " + thenStr,
-                "\n\t else: " + elseStr
-        );
+        builder.append("If Statement:")
+                .append("\n\t condition: ").append(conditionStr)
+                .append("\n\t then: ").append(thenStr);
+
+        if (statement.elseIfConditions != null && !statement.elseIfConditions.isEmpty()) {
+            for (int i = 0; i < statement.elseIfConditions.size(); i++) {
+                String elseIfConditionStr = printExpr(statement.elseIfConditions.get(i));
+                String elseIfBlockStr = printStatement(statement.elseIfBlocks.get(i));
+                builder.append("\n\t else if [KUNG DILI]: ").append(elseIfConditionStr)
+                        .append("\n\t\t block: ").append(elseIfBlockStr);
+            }
+        }
+
+        if (statement.elseBlock != null) {
+            String elseStr = printStatement(statement.elseBlock);
+            builder.append("\n\t else [KUNG WALA]: ").append(elseStr);
+        }
+
+        return builder.toString();
     }
 
     @Override

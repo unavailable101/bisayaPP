@@ -53,7 +53,9 @@ public class Parser {
 //            statement(currLine);
             if (
                     currToken(currLine).getType() == IF ||
-                    currToken(currLine).getType() == WHILE
+                            currToken(currLine).getType() == IF_ELSE ||
+                            currToken(currLine).getType() == ELSE ||
+                            currToken(currLine).getType() == WHILE
             ) controlStruct();
             else {
                 statement(currLine);
@@ -73,100 +75,166 @@ public class Parser {
         System.out.println("------------------ OUTPUT --------------------");
     }
 
-//    private Statement parseNextBlockOrStatement() throws SyntaxError {
+    private Statement parseNextBlockOrStatement() {
+        List<Token> curr = lineTokens.get(line);
+
+        if (indx >= curr.size() - 1) {
+            ++line;
+            if (line >= size) {
+                throw new SyntaxError(curr.getLast().getLine(), "Expected block or statement, but none found.");
+            }
+            curr = lineTokens.get(line);
+            indx = 0;
+        }
+
+        Token token = currToken(curr);
+        if (token.getValue().equals("PUNDOK") && token.getType() == BLOCK) {
+            nextToken(curr);
+            return blockStatements();
+        } else {
+            statement(curr);
+            ++line;
+            return statements.removeLast();
+        }
+    }
+
+//    private void controlStruct() {
+//        System.out.println("------------------ CONTROL STRUCTURES --------------------");
 //        List<Token> curr = lineTokens.get(line);
+//        Token firstToken = currToken(curr);
+////        int save = line;
+//        indx = 0;
+//        size = lineTokens.size();
 //
-//        System.out.println("Parsing block/statement at line " + line);
-//        System.out.println(curr.size());
-//        if (indx == curr.size() - 1) {
-//            System.out.println("Inside the if: ");
-//            ++line;
-//            if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Walay statement/s human sa condition");
+//        if (!firstToken.getValue().equals("KUNG") || firstToken.getType() != IF) {
+//            throw new SyntaxError(firstToken.getLine(), "KUNG must be the first in a control structure.");
+//        }
+//
+//        System.out.println("Base Token (KUNG): " + firstToken);
+//        nextToken(curr);
+//        Expression condition = boolCondition(curr, firstToken.getValue().toString());
+//
+//        Statement thenBlock = parseNextBlockOrStatement();
+//        List<Expression> elseIfConditions = new ArrayList<>();
+//        List<Statement> elseIfBlocks = new ArrayList<>();
+//        Statement elseBlock = null;
+//
+//        while (line < size) {
+//            System.out.println(line + " " + size);
 //            curr = lineTokens.get(line);
 //            indx = 0;
+//            Token token = currToken(curr);
 //
-//            if (currToken(curr).getValue().equals("PUNDOK") && currToken(curr).getType() == BLOCK) {
+//            if (token.getValue().equals("KUNG DILI") && token.getType() == IF_ELSE) {
+//                System.out.println("Found KUNG DILI");
+//                nextToken(curr);
+//                Expression elifCondition = boolCondition(curr, token.getValue().toString());
+//                Statement elifBlock = parseNextBlockOrStatement();
+//
+//                elseIfConditions.add(elifCondition);
+//                elseIfBlocks.add(elifBlock);
+//            }
+//            else if (token.getValue().equals("KUNG WALA") && token.getType() == ELSE) {
+//                System.out.println("Found KUNG WALA");
 //                nextToken(curr);
 //
-//                return blockStatements();
-//            } else {
-//                statement(curr);
-//                ++line;
-//                return statements.removeLast();
+//                if (indx >= curr.size()) {
+//                    ++line;
+//                    indx = 0;
+//                    if (line < size) {
+//                        curr = lineTokens.get(line);
+//                    } else {
+//                        throw new SyntaxError(token.getLine(), "Expected block or statement after KUNG WALA");
+//                    }
+//                }
+//
+//                elseBlock = parseNextBlockOrStatement();
+//                break;
 //            }
-//        } else {
-//            statement(curr);
-//            ++line;
-//            return statements.removeLast();
+//            else {
+//                break;
+//            }
 //        }
+//        statements.add(new Statement.IfStatement(condition, thenBlock, elseIfConditions, elseIfBlocks, elseBlock));
+//
+//        // Check if we're at the end of the program (KATAPUSAN)
+//        Token lastToken = lineTokens.get(line).get(lineTokens.get(line).size() - 1);
+//        if (lastToken.getValue().equals("KATAPUSAN") && lastToken.getType() == END_PROG) {
+//            System.out.println("Program has ended (KATAPUSAN).");
+//        } else {
+//            throw new SyntaxError(lastToken.getLine(), "Expected 'KATAPUSAN' after this control structure.");
+//        }
+//
+//        System.out.println(line + " " + size);
+//        System.out.println("EHE");
 //    }
 
 
 
-    private void controlStruct(){
-        List<Token> curr = lineTokens.get(line);
-        int save = line;
 
-        switch (currToken(curr).getType()){
+//        RAWR
+    private void controlStruct() {
+        System.out.println("------------------ CONTROL STRUCTURES --------------------");
+        List<Token> curr = lineTokens.get(line);
+        System.out.println("--------->" + curr);
+
+        int save = line;
+        System.out.println("Save: " + line);
+        System.out.println("CurrentToken: " + currToken(curr));
+
+        switch (currToken(curr).getType()) {
             case IF:
             case IF_ELSE:
                 Token baseToken = currToken(curr);
-                Expression condition;
-                Statement thenBlock;
-                Statement elseBlock = null;
-
                 if (baseToken.getValue().equals("KUNG WALA")) {
                     throw new SyntaxError(baseToken.getLine(), "KUNG WALA cannot be used as a standalone if-statement.");
                 }
 
                 nextToken(curr);
-                condition = boolCondition(curr, baseToken.getValue().toString());
+                Expression condition = boolCondition(curr, baseToken.getValue().toString());
+                Statement thenBlock;
 
-//                thenBlock = parseNextBlockOrStatement();
-                System.out.println("Parsing block/statement at line " + line);
-                System.out.println(curr.size());
-
+                // FOR the KUNG block (the starting which is KUNG)
                 if (indx == curr.size() - 1) {
-                    System.out.println("Inside the if: ");
                     ++line;
-                    if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Walay statement/s human sa condition");
+                    if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Lapas naka!");
                     curr = lineTokens.get(line);
                     indx = 0;
 
                     if (currToken(curr).getValue().equals("PUNDOK") && currToken(curr).getType() == BLOCK) {
                         nextToken(curr);
-
                         thenBlock = blockStatements();
                     } else {
                         statement(curr);
-                        ++line;
                         thenBlock = statements.removeLast();
+                        ++line;
                     }
                 } else {
                     statement(curr);
-                    ++line;
                     thenBlock = statements.removeLast();
+                    ++line;
                 }
 
-                //TODO: handle elseBlock here
-                // tip: keyword KUNG DILI can be treated as an elseBlock
-                // where elseBlock = Statement.IfStatement(condition, thenBlock, elseBlock)
-                // pero kamo nay bahala unsaon hehe
+                // Prepare containers for else-if and else
+                List<Expression> elseIfConditions = new ArrayList<>();
+                List<Statement> elseIfBlocks = new ArrayList<>();
+                Statement elseBlock = null;
 
+                // Parse KUNG DILI and KUNG WALA blocks
                 while (line < size) {
                     curr = lineTokens.get(line);
                     indx = 0;
-
                     Token token = currToken(curr);
 
                     if (token.getType() == IF_ELSE && token.getValue().equals("KUNG DILI")) {
                         nextToken(curr);
                         Expression elifCondition = boolCondition(curr, prevToken(curr).getValue().toString());
+
                         Statement elifBlock;
                         if (indx == curr.size() - 1) {
                             ++line;
-                            if (line >= size)
-                                throw new SyntaxError(curr.getLast().getLine(), "Walay statement/s human sa KUNG DILI");
+                            if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Lapas naka undoy");
+
                             curr = lineTokens.get(line);
                             indx = 0;
 
@@ -184,13 +252,11 @@ public class Parser {
                             ++line;
                         }
 
-                        elseBlock = new Statement.IfStatement(elifCondition, elifBlock, elseBlock);
+                        elseIfConditions.add(elifCondition);
+                        elseIfBlocks.add(elifBlock);
+
                     } else if (token.getType() == ELSE && token.getValue().equals("KUNG WALA")) {
-                        System.out.println("Found KUNG WALA at line " + token.getLine());
-
                         nextToken(curr);
-
-                        // Gubaon ang nextToken(curr);
                         if (indx >= curr.size()) {
                             ++line;
                             indx = 0;
@@ -201,58 +267,58 @@ public class Parser {
                             }
                         }
 
-                        Token nextToken = currToken(curr);
-                        System.out.println("Next token after KUNG WALA: " + nextToken.getValue());
-
-                        Statement finalElseBlock;
                         if (currToken(curr).getValue().equals("PUNDOK") && currToken(curr).getType() == BLOCK) {
                             nextToken(curr);
-                            finalElseBlock = blockStatements();
+                            elseBlock = blockStatements();
                         } else {
                             statement(curr);
-                            finalElseBlock = statements.removeLast();
+                            elseBlock = statements.removeLast();
                             ++line;
                         }
-
-                        elseBlock = finalElseBlock;
                         break;
                     } else {
                         break;
                     }
                 }
-                statements.add(new Statement.IfStatement(condition, thenBlock, elseBlock));
+
+                statements.add(new Statement.IfStatement(condition, thenBlock, elseIfConditions, elseIfBlocks, elseBlock));
                 break;
+
             case WHILE:
                 nextToken(curr);
-                condition = boolCondition(curr, prevToken(curr).getValue().toString());
+                Expression whileCond = boolCondition(curr, prevToken(curr).getValue().toString());
 
-                if (indx == curr.size()-1) {
+                Statement whileBody;
+                if (indx == curr.size() - 1) {
                     ++line;
                     if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Walay statement/s human sa condition");
                     curr = lineTokens.get(line);
                     indx = 0;
 
-                    if (currToken(curr).getType() == BLOCK){
-                        nextToken(lineTokens.get(line));
-                        thenBlock = blockStatements();
+                    if (currToken(curr).getType() == BLOCK) {
+                        nextToken(curr);
+                        whileBody = blockStatements();
                     } else {
                         statement(curr);
-                        thenBlock = statements.removeLast();
+                        whileBody = statements.removeLast();
                         ++line;
                     }
-
                 } else {
                     statement(curr);
-                    thenBlock = statements.removeLast();
+                    whileBody = statements.removeLast();
                     ++line;
                 }
-                statements.add(new Statement.WhileStatement(condition, thenBlock));
+
+                statements.add(new Statement.WhileStatement(whileCond, whileBody));
                 break;
 
-            // TODO: add other keywords here (e.g. FOR, DO)
+            // TODO: Handle FOR, DO, etc.
         }
-        if (line-save == 1) --line;
+
+        if (line - save == 1) --line;
+        System.out.println("------------------ END --------------------");
     }
+
 
     private Statement blockStatements(){
         consume(currToken(lineTokens.get(line)), OPEN_BRACES, "Walay '{' human sa PUNDOK keyword");
@@ -382,10 +448,17 @@ public class Parser {
 
     private Expression boolCondition(List<Token> tokens, String keyword){
 //        System.out.println(keyword);
+        System.out.println("-----Tokens passed to boolCondition: " + tokens);
         consume(currToken(tokens), ARITH_OPEN_P, "Walay '(' human sa "+ keyword +" keyword");
         nextToken(tokens);
+        System.out.println(">>>>>Current Token after next: " + currToken(tokens));
         Expression cond = expression(tokens);
+        // assuming sakto ra ang expression cond
+
+        System.out.println(">>>>>Current Token after checking condition: " + currToken(tokens));
         consume(currToken(tokens), ARITH_CLOSE_P, "Walay ')' human sa condition");
+
+        System.out.println("boolCondition Result: " + cond);
         return cond;
     }
 
