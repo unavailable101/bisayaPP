@@ -277,6 +277,24 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
 
+    @Override
+    public <R> R visitForStatement(Statement.ForStatement statement) {
+        if (statement.initializer != null) {
+            execute(statement.initializer);
+        }
+
+        while (isTrue(evaluate(statement.condition))) {
+            execute(statement.block);
+
+            if (statement.increment != null) {
+                evaluate(statement.increment);
+            }
+        }
+
+        return null;
+    }
+
+
     private boolean isTrue(Object o){
         return o == null ? false :
                 o instanceof Boolean ? (boolean)o : false;

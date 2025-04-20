@@ -16,6 +16,7 @@ public abstract class Statement {
         <R> R visitIfStatement(IfStatement statement);
         <R> R visitBlockStatement(BlockStatement statement);
         <R> R visitWhileStatement(WhileStatement statement);
+        <R> R visitForStatement(ForStatement statement); // para sa ALANG SA
     }
     // < statement >    ->      < expr_statement >
     public static class Expr extends Statement {
@@ -125,6 +126,25 @@ public abstract class Statement {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitWhileStatement(this);
+        }
+    }
+
+    public static class ForStatement extends Statement {
+        public final Statement initializer;
+        public final Expression condition;
+        public final Expression increment;
+        public final Statement block;
+
+        public ForStatement(Statement initializer, Expression condition, Expression increment, Statement block) {
+            this.initializer = initializer;
+            this.condition = condition;
+            this.increment = increment;
+            this.block = block;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitForStatement(this);
         }
     }
 }

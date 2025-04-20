@@ -167,4 +167,30 @@ class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor<String
                 "\n\t then: " + thenStr
         );
     }
+
+    @Override
+    public String visitForStatement(Statement.ForStatement statement) {
+        StringBuilder builder = new StringBuilder();
+
+        String initializerStr = statement.initializer != null
+                ? printStatement(statement.initializer)
+                : "wala";
+        String conditionStr = statement.condition != null
+                ? printExpr(statement.condition)
+                : "wala";
+        String incrementStr = statement.increment != null
+                ? printExpr(statement.increment)
+                : "wala";
+        String blockStr = statement.block != null
+                ? printStatement(statement.block)
+                : "wala";
+
+        builder.append("For Loop:")
+                .append("\n\tinitializer: ").append(initializerStr)
+                .append("\n\tcondition: ").append(conditionStr)
+                .append("\n\tupdate (increment): ").append(incrementStr)
+                .append("\n\tBlock: ").append(blockStr);
+
+        return builder.toString();
+    }
 }
