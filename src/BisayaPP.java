@@ -1,3 +1,5 @@
+import interpreter.Breakout;
+import interpreter.ContinueNext;
 import interpreter.Interpreter;
 import lexer.Lexer;
 import parser.Parser;
@@ -35,6 +37,10 @@ public class BisayaPP {
                     ).parse()
             )
             ;
+            System.out.println();
+            System.out.println("No Error");
+        } catch ( Breakout | ContinueNext e){
+            System.out.print("");
         } catch (IOException e) {
             System.out.println("Unable to read file: " + filename);
         }

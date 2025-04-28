@@ -8,14 +8,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 class Environment {
-    private final Map<String, Object> values;
-    private final Map<String, Token> types;
-
+    private final Map<String, Object> values = new HashMap<>();
+    private final Map<String, Token> types = new HashMap<>();
+    final Environment enclosing;
     public Environment() {
-        this.values = new HashMap<>();
-        this.types = new HashMap<>();
+        this.enclosing = null;
     }
-
+    public Environment(Environment enclosing){
+        this.enclosing = enclosing;
+    }
     Object get(Token name){
         if (values.containsKey(name.getValue())) return values.get(name.getValue());
         throw new UndefinedVariableError(name.getLine(), name.getValue().toString() );

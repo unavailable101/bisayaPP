@@ -17,6 +17,8 @@ public abstract class Statement {
         <R> R visitBlockStatement(BlockStatement statement);
         <R> R visitWhileStatement(WhileStatement statement);
         <R> R visitForStatement(ForStatement statement); // para sa ALANG SA
+        <R> R visitBreakStatement(BreakStatement statement);
+        <R> R visitContinueStatement(ContinueStatement statement);
     }
     // < statement >    ->      < expr_statement >
     public static class Expr extends Statement {
@@ -147,4 +149,30 @@ public abstract class Statement {
             return visitor.visitForStatement(this);
         }
     }
+    public static class BreakStatement extends Statement{
+        public final Token keyword;
+
+        public BreakStatement(Token keyword) {
+            this.keyword=keyword;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitBreakStatement(this);
+        }
+    }
+
+    public static class ContinueStatement extends Statement{
+        public final Token keyword;
+
+        public ContinueStatement(Token keyword) {
+            this.keyword=keyword;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitContinueStatement(this);
+        }
+    }
+
 }

@@ -193,4 +193,13 @@ class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor<String
 
         return builder.toString();
     }
+    @Override
+    public String visitBreakStatement(Statement.BreakStatement statement){
+        return parenthesizeStmt("Break Statement: " + statement.keyword);
+    }
+
+    @Override
+    public String visitContinueStatement(Statement.ContinueStatement statement){
+        return parenthesizeStmt("Continue Statement: " + statement.keyword);
+    }
 }

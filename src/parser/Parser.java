@@ -462,6 +462,14 @@ public class Parser {
                 nextToken(tokens);
                 statements.addAll(inputStatement(tokens));
                 break;
+            case BREAK:
+                nextToken(tokens);
+                statements.add(new Statement.BreakStatement(currToken(tokens)));
+                break;
+            case CONTINUE:
+                nextToken(tokens);
+                statements.add(new Statement.ContinueStatement(currToken(tokens)));
+                break;
             default:
                 statements.add(exprStatement(tokens));
         }

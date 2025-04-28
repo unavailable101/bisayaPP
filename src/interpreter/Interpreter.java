@@ -235,9 +235,9 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     @Override
     public <R> R visitIfStatement(Statement.IfStatement statement) {
         // Evaluate the condition of the 'if' statement
-        System.out.println("statement.condition: " + statement.condition);
+//        System.out.println("statement.condition: " + statement.condition);
+//        System.out.println("Condition Result: " + conditionResult);
         Object conditionResult = evaluate(statement.condition);
-        System.out.println("Condition Result: " + conditionResult);
 
         // If the condition evaluates to true, execute the 'then' block
         if (isTrue(conditionResult)) {
@@ -279,21 +279,44 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public <R> R visitForStatement(Statement.ForStatement statement) {
-        if (statement.initializer != null) {
-            execute(statement.initializer);
-        }
-
-        while (isTrue(evaluate(statement.condition))) {
-            execute(statement.block);
-
-            if (statement.increment != null) {
-                evaluate(statement.increment);
+        Environment previous = new Environment();
+        try{
+            env = new Environment(env);
+            if (statement.initializer != null) {
+                execute(statement.initializer);
             }
-        }
 
+            while (isTrue(evaluate(statement.condition))) {
+                try{
+                    execute(statement.block);
+                    if (statement.increment != null) {
+                        evaluate(statement.increment);
+                    }
+                }catch (Breakout b){
+                    break;
+                }catch (ContinueNext c){
+                    if(statement.increment != null){
+                        evaluate(statement.increment);
+                    }
+                    continue;
+                }
+                if(statement.increment != null){
+                    evaluate(statement.increment);
+                }
+            }
+        }finally {
+            env = previous;
+        }
         return null;
     }
-
+    @Override
+    public <R> R visitBreakStatement(Statement.BreakStatement statement) {
+        throw new Breakout(statement.keyword);
+    }
+    @Override
+    public <R> R visitContinueStatement(Statement.ContinueStatement statement) {
+        throw new ContinueNext(statement.keyword);
+    }
 
     private boolean isTrue(Object o){
         return o == null ? false :
