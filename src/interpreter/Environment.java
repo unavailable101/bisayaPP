@@ -11,19 +11,32 @@ class Environment {
     private final Map<String, Object> values = new HashMap<>();
     private final Map<String, Token> types = new HashMap<>();
     final Environment enclosing;
+
     public Environment() {
         this.enclosing = null;
     }
+
     public Environment(Environment enclosing){
         this.enclosing = enclosing;
     }
+
     Object get(Token name){
         if (values.containsKey(name.getValue())) return values.get(name.getValue());
-        throw new UndefinedVariableError(name.getLine(), name.getValue().toString() );
+
+        if (enclosing != null) return enclosing.get(name); // search in parent
+
+        throw new UndefinedVariableError(name.getLine(), name.getValue().toString());
     }
 
-    Token getType (String var){
-        if (types.containsKey(var)) return types.get(var);
+    Token getType(String var) {
+        if (types.containsKey(var)) {
+            return types.get(var);
+        }
+
+        if (enclosing != null) {
+            return enclosing.getType(var);
+        }
+
         throw new RuntimeException("Undefined variable '" + var + "'");
     }
 
@@ -37,6 +50,12 @@ class Environment {
             values.put(name.getValue().toString(), value);
             return;
         }
+
+        if (enclosing != null){
+            enclosing.assign(name, value);
+            return;
+        }
+
         throw new UndefinedVariableError(name.getLine(),name.getValue().toString() );
     }
 }

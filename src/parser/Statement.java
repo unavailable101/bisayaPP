@@ -148,6 +148,10 @@ public abstract class Statement {
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitForStatement(this);
         }
+
+        public Statement getInitializer() {
+            return initializer;
+        }
     }
     public static class BreakStatement extends Statement{
         public final Token keyword;

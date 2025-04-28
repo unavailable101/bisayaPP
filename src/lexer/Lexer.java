@@ -525,7 +525,15 @@ public class Lexer {
 
                 - in short, pag extract ragyud sa keyword ang buhaton dire
         */
-        System.out.println(lexemes);
+        if (lexemes.get(1).startsWith("SA")){
+            String str = lexemes.get(0) + " " + "SA";
+
+            lineToken.add(new Token(FOR, str));
+
+            String substring = lexemes.get(1).substring(2);
+            lexemes.set(1, substring);
+            tokenizeParts(String.join(" ", lexemes.subList(1, lexemes.size())), lineToken);
+        }
     }
 
 }

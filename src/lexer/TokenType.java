@@ -42,6 +42,8 @@ public enum TokenType {
     ARITH_OPEN_P,           // : (
     ARITH_CLOSE_P,          // : )
 
+    INCREMENT,              // : ++
+
 //    LOG_OP,                 // : logical operations: UG, O, DILI
     LOG_AND,                // : UG
     LOG_OR,                 // : O

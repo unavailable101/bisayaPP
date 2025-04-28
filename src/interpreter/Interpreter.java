@@ -264,10 +264,40 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
 
+    @Override
+    public <R> R visitForStatement(Statement.ForStatement statement) {
+        if (statement.initializer != null) {
+            execute(statement.initializer);
+        }
+
+        while (isTrue(evaluate(statement.condition))) {
+            try {
+                execute(statement.block);
+            } catch (Breakout b) {
+                break;
+            } catch (ContinueNext c) {
+
+            }
+
+            if (statement.increment != null) {
+                evaluate(statement.increment);
+            }
+        }
+
+        return null;
+    }
+
 
     @Override
     public <R> R visitBlockStatement(Statement.BlockStatement statement) {
-        for (Statement stmt : statement.statements) execute(stmt);
+        Environment previous = this.env;
+        try {
+            this.env = new Environment(previous);
+            for (Statement stmt : statement.statements) execute(stmt);
+        }
+        finally {
+            this.env = previous;
+        }
         return null;
     }
 
@@ -277,38 +307,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
 
-    @Override
-    public <R> R visitForStatement(Statement.ForStatement statement) {
-        Environment previous = new Environment();
-        try{
-            env = new Environment(env);
-            if (statement.initializer != null) {
-                execute(statement.initializer);
-            }
-
-            while (isTrue(evaluate(statement.condition))) {
-                try{
-                    execute(statement.block);
-                    if (statement.increment != null) {
-                        evaluate(statement.increment);
-                    }
-                }catch (Breakout b){
-                    break;
-                }catch (ContinueNext c){
-                    if(statement.increment != null){
-                        evaluate(statement.increment);
-                    }
-                    continue;
-                }
-                if(statement.increment != null){
-                    evaluate(statement.increment);
-                }
-            }
-        }finally {
-            env = previous;
-        }
-        return null;
-    }
     @Override
     public <R> R visitBreakStatement(Statement.BreakStatement statement) {
         throw new Breakout(statement.keyword);
@@ -379,19 +377,24 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     private Object inputType (String input, String type, int line){
-         switch (type){
-             case "NUMERO":
-                 return Integer.parseInt(input);
-             case "TIPIK":
-                 return Double.parseDouble(input);
-             case "PISI":
-                 return "\"" + input + "\"";
-             case "LETRA":
-                 if (input.length()!=1) throw new TypeError(line, "usa ra ka character");
-                 return Character.valueOf(input.charAt(0));
-             default:
-                 throw new TypeError(line, "Wa ko kaila");
-         }
+        switch (type){
+            case "NUMERO":
+                return Integer.parseInt(input);
+            case "TIPIK":
+                return Double.parseDouble(input);
+            case "PISI":
+                return "\"" + input + "\"";
+            case "TINUOD":
+                if (
+                        input.equals("\"OO\"") ||
+                                input.equals("\"DILI\"")
+                ) return input.equals("\"OO\"") ? Boolean.TRUE : Boolean.FALSE;
+            case "LETRA":
+                if (input.length()!=1) throw new TypeError(line, "usa ra ka character");
+                return Character.valueOf(input.charAt(0));
+            default:
+                throw new TypeError(line, "Wa ko kaila");
+        }
     }
 
     private String typeof(Object value){

@@ -48,16 +48,23 @@ public class Parser {
     private void parseStatements(){
         List<Token> currLine;
 
+        boolean hasIfBlockPreviously = false;
+
         while (line < size) {
             currLine = lineTokens.get(line);
 //            statement(currLine);
-            if (
-                    currToken(currLine).getType() == IF ||
-                            currToken(currLine).getType() == IF_ELSE ||
-                            currToken(currLine).getType() == ELSE ||
-                            currToken(currLine).getType() == FOR ||
-                            currToken(currLine).getType() == WHILE
-            ) controlStruct();
+            if (currToken(currLine).getType() == IF) {
+                controlStruct();
+            }
+            else if (currToken(currLine).getType() == IF_ELSE || currToken(currLine).getType() == ELSE) {
+                if (!hasIfBlockPreviously) {
+                    throw new SyntaxError(line, currToken(currLine).getValue() + " ang nakita pero walay KUNG na (IF).");
+                }
+                controlStruct();
+            }
+            else if (currToken(currLine).getType() == FOR || currToken(currLine).getType() == WHILE) {
+                controlStruct();
+            }
             else {
                 statement(currLine);
                 line++;
@@ -76,103 +83,6 @@ public class Parser {
         System.out.println("------------------ OUTPUT --------------------");
     }
 
-//    private Statement parseNextBlockOrStatement() {
-//        List<Token> curr = lineTokens.get(line);
-//
-//        if (indx >= curr.size() - 1) {
-//            ++line;
-//            if (line >= size) {
-//                throw new SyntaxError(curr.getLast().getLine(), "Expected block or statement, but none found.");
-//            }
-//            curr = lineTokens.get(line);
-//            indx = 0;
-//        }
-//
-//        Token token = currToken(curr);
-//        if (token.getValue().equals("PUNDOK") && token.getType() == BLOCK) {
-//            nextToken(curr);
-//            return blockStatements();
-//        } else {
-//            statement(curr);
-//            ++line;
-//            return statements.removeLast();
-//        }
-//    }
-
-//    private void controlStruct() {
-//        System.out.println("------------------ CONTROL STRUCTURES --------------------");
-//        List<Token> curr = lineTokens.get(line);
-//        Token firstToken = currToken(curr);
-////        int save = line;
-//        indx = 0;
-//        size = lineTokens.size();
-//
-//        if (!firstToken.getValue().equals("KUNG") || firstToken.getType() != IF) {
-//            throw new SyntaxError(firstToken.getLine(), "KUNG must be the first in a control structure.");
-//        }
-//
-//        System.out.println("Base Token (KUNG): " + firstToken);
-//        nextToken(curr);
-//        Expression condition = boolCondition(curr, firstToken.getValue().toString());
-//
-//        Statement thenBlock = parseNextBlockOrStatement();
-//        List<Expression> elseIfConditions = new ArrayList<>();
-//        List<Statement> elseIfBlocks = new ArrayList<>();
-//        Statement elseBlock = null;
-//
-//        while (line < size) {
-//            System.out.println(line + " " + size);
-//            curr = lineTokens.get(line);
-//            indx = 0;
-//            Token token = currToken(curr);
-//
-//            if (token.getValue().equals("KUNG DILI") && token.getType() == IF_ELSE) {
-//                System.out.println("Found KUNG DILI");
-//                nextToken(curr);
-//                Expression elifCondition = boolCondition(curr, token.getValue().toString());
-//                Statement elifBlock = parseNextBlockOrStatement();
-//
-//                elseIfConditions.add(elifCondition);
-//                elseIfBlocks.add(elifBlock);
-//            }
-//            else if (token.getValue().equals("KUNG WALA") && token.getType() == ELSE) {
-//                System.out.println("Found KUNG WALA");
-//                nextToken(curr);
-//
-//                if (indx >= curr.size()) {
-//                    ++line;
-//                    indx = 0;
-//                    if (line < size) {
-//                        curr = lineTokens.get(line);
-//                    } else {
-//                        throw new SyntaxError(token.getLine(), "Expected block or statement after KUNG WALA");
-//                    }
-//                }
-//
-//                elseBlock = parseNextBlockOrStatement();
-//                break;
-//            }
-//            else {
-//                break;
-//            }
-//        }
-//        statements.add(new Statement.IfStatement(condition, thenBlock, elseIfConditions, elseIfBlocks, elseBlock));
-//
-//        // Check if we're at the end of the program (KATAPUSAN)
-//        Token lastToken = lineTokens.get(line).get(lineTokens.get(line).size() - 1);
-//        if (lastToken.getValue().equals("KATAPUSAN") && lastToken.getType() == END_PROG) {
-//            System.out.println("Program has ended (KATAPUSAN).");
-//        } else {
-//            throw new SyntaxError(lastToken.getLine(), "Expected 'KATAPUSAN' after this control structure.");
-//        }
-//
-//        System.out.println(line + " " + size);
-//        System.out.println("EHE");
-//    }
-
-
-
-
 //        RAWR
     private void controlStruct() {
         System.out.println("------------------ CONTROL STRUCTURES --------------------");
@@ -185,7 +95,6 @@ public class Parser {
 
         switch (currToken(curr).getType()) {
             case IF:
-            case IF_ELSE:
                 Token baseToken = currToken(curr);
                 if (baseToken.getValue().equals("KUNG WALA")) {
                     throw new SyntaxError(baseToken.getLine(), "KUNG WALA kay sayop paggamit.");
@@ -319,27 +228,17 @@ public class Parser {
                 if (currToken(curr).getType() != ARITH_OPEN_P) {
                     throw new SyntaxError(currToken(curr).getLine(), "Expected '(' after FOR.");
                 }
+
                 nextToken(curr);
 
                 // Parse initializer
-                Statement initializer;
+                Statement initializer = null;
                 if (currToken(curr).getType() != COMMA) {
+                    System.out.println("!= COMMA");
                     statement(curr);
                     initializer = statements.removeLast();
-                } else {
-                    initializer = null;
-                    if (currToken(curr).getType() == VAR_DECLARATION) {
-                        varDeclare(curr); // Parse the MUGNA line as a declaration
-                        initializer = statements.removeLast();
-                    } else if (currToken(curr).getType() != COMMA) {
-                        statement(curr); // Fallback to a regular assignment
-                        initializer = statements.removeLast();
-                    } else {
-                        nextToken(curr); // Skip if no initializer
-                    }
                 }
 
-                System.out.println(currToken(curr));
 
                 // Expect ,
                 if (currToken(curr).getType() != COMMA) {
@@ -396,6 +295,7 @@ public class Parser {
                 statements.add(new Statement.ForStatement(initializer, forCondition, increment, body));
                 break;
 
+
             // TODO: Handle FOR, DO, etc.
         }
 
@@ -423,6 +323,7 @@ public class Parser {
             if (
                     currToken(lineTokens.get(line)).getType() == IF ||
                     currToken(lineTokens.get(line)).getType() == WHILE
+                            || currToken(lineTokens.get(line)).getType() == FOR
             ) controlStruct();
             else {
                 statement(lineTokens.get(line));
@@ -430,6 +331,7 @@ public class Parser {
                 indx = 0;
 
                 if (line >= size){
+                    System.out.println("Naas block statement");
                     throw new SyntaxError(lineTokens.get(line-1).getLast().getLine(),
                             "Walay '}' human sa block statement");
                 }
@@ -475,6 +377,89 @@ public class Parser {
         }
     }
 
+//    private void parseFor(List<Token> curr) {
+////        System.out.println(curr);
+//        System.out.println(currToken(curr));
+////        nextToken(curr); // <----- This part, nextToken not working
+//
+//        System.out.println(currToken(curr));
+//
+//        if (currToken(curr).getType() != ARITH_OPEN_P) {
+//            throw new SyntaxError(currToken(curr).getLine(), "Expected '(' after FOR.");
+//        }
+//        System.out.println("MANA ang (");
+//
+//        nextToken(curr);
+//
+//        // Parse initializer
+//        Statement initializer = null;
+//        if (currToken(curr).getType() != COMMA) {
+//            System.out.println("!= COMMA");
+//            statement(curr);
+//            initializer = statements.removeLast();
+//        }
+//
+//        System.out.println(currToken(curr));
+//
+//        // Expect ,
+//        if (currToken(curr).getType() != COMMA) {
+//            throw new SyntaxError(currToken(curr).getLine(), "Expected ',' after initializer.");
+//        }
+//        nextToken(curr);
+//
+//        // Parse condition
+//        Expression forCondition;
+//        if (currToken(curr).getType() != COMMA) {
+//            forCondition = expression(curr); // e.g. ctr <= 10
+//        } else {
+//            forCondition = null;
+//            nextToken(curr);
+//        }
+//
+//        // Expect ,
+//        if (currToken(curr).getType() != COMMA) {
+//            throw new SyntaxError(currToken(curr).getLine(), "Expected ',' after condition.");
+//        }
+//        nextToken(curr);
+//        System.out.println("After consuming , " + currToken(curr).toString());
+//
+//        // Parse increment
+//        Expression increment = null;
+//        if (currToken(curr).getType() != ARITH_CLOSE_P) {
+//            increment = expression(curr); // e.g. ctr++
+//        }
+//
+//        // Expect )
+//        if (currToken(curr).getType() != ARITH_CLOSE_P) {
+//            throw new SyntaxError(currToken(curr).getLine(), "Expected ')' after increment.");
+//        }
+//        nextToken(curr);
+//
+//        // Parse loop body
+//        Statement body;
+//        if (indx >= curr.size()) {
+//            System.out.println("naas parsefor body");
+//            ++line;
+//            indx = 0;
+//            if (line >= size) throw new SyntaxError(curr.getLast().getLine(), "Missing loop body after FOR");
+//            curr = lineTokens.get(line);
+//        }
+//
+//        if (currToken(curr).getType() == BLOCK) {
+//            nextToken(curr);
+//            body = blockStatements();
+//        } else {
+//            System.out.println("Diri ba?");
+//            statement(curr);
+//            body = statements.removeLast();
+//            ++line;
+//        }
+//
+//        statements.add(new Statement.ForStatement(initializer, forCondition, increment, body));
+//
+//    }
+
+
     private List<Statement> varDeclare(List<Token> tokens){
         Token dataType = null;
         if (consume(currToken(tokens), DATA_TYPE, "Walay Data Type")) dataType = currToken(tokens);
@@ -514,10 +499,16 @@ public class Parser {
     }
 
     private Statement outputStatement(List<Token> tokens){
-            consume(currToken(tokens), COLON, "Walay ':' human sa " + prevToken(tokens));
-            nextToken(tokens);
-            Expression expr = expression(tokens);
-            return new Statement.Output(expr);
+        consume(currToken(tokens), COLON, "Walay ':' human sa " + prevToken(tokens));
+        nextToken(tokens);
+        Expression expr = expression(tokens);
+
+        if (indx < lineTokens.get(line).size() && currToken(tokens).getType() != CONCAT) {
+            throw new SyntaxError(currToken(tokens).getLine(),
+                    "Dili pwede magbutang extra expression sa IPAKITA. Gamita ang '&' kung gusto mag-concatenate.");
+        }
+
+        return new Statement.Output(expr);
     }
 
     private List<Statement> inputStatement(List<Token> tokens){
