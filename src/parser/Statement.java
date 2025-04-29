@@ -19,6 +19,7 @@ public abstract class Statement {
         <R> R visitForStatement(ForStatement statement); // para sa ALANG SA
         <R> R visitBreakStatement(BreakStatement statement);
         <R> R visitContinueStatement(ContinueStatement statement);
+        <R> R visitIncrementStatement(IncrementStatement statement); // increment
     }
     // < statement >    ->      < expr_statement >
     public static class Expr extends Statement {
@@ -179,4 +180,18 @@ public abstract class Statement {
         }
     }
 
+    public static class IncrementStatement extends Statement {
+        public final Token variableName;
+        public final boolean isPreincrement;
+
+        public IncrementStatement(Token variableName, boolean isPreincrement) {
+            this.variableName = variableName;
+            this.isPreincrement = isPreincrement;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitIncrementStatement(this);
+        }
+    }
 }

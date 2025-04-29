@@ -202,4 +202,14 @@ class ASTPrinter implements Statement.Visitor<String>, Expression.Visitor<String
     public String visitContinueStatement(Statement.ContinueStatement statement){
         return parenthesizeStmt("Continue Statement: " + statement.keyword);
     }
+
+    @Override
+    public String visitIncrementStatement(Statement.IncrementStatement statement) {
+        return parenthesizeStmt("INCREMENT " + statement.variableName.getValue().toString());
+    }
+
+    @Override
+    public String visitIncrementExpression(Expression.IncrementExpression statement) {
+        return parenthesizeStmt("INCREMENT " + statement.variable.getValue().toString());
+    }
 }

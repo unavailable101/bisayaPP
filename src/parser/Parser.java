@@ -62,7 +62,13 @@ public class Parser {
                 }
                 controlStruct();
             }
-            else if (currToken(currLine).getType() == FOR || currToken(currLine).getType() == WHILE) {
+            else if (currToken(currLine).getType() == FOR || currToken(currLine).getType() == WHILE || currToken(currLine).getType() == INCREMENT) {
+                controlStruct();
+            }
+            else if (currLine.size() == 2 &&
+                    ((currLine.get(0).getType() == IDENTIFIER && currLine.get(1).getType() == INCREMENT)) ||
+                    (currLine.get(0).getType() == INCREMENT && currLine.get(1).getType() == IDENTIFIER)) {
+                System.out.println(currToken(currLine) + ": This is current."); // <---- it returns ctr so when passed to controlStruct(), it reads ctr
                 controlStruct();
             }
             else {
@@ -94,6 +100,29 @@ public class Parser {
         System.out.println("CurrentToken: " + currToken(curr));
 
         switch (currToken(curr).getType()) {
+            case INCREMENT:
+                // Handle PRE-INCREMENT
+                if (curr.size() == 2 && curr.get(1).getType() == IDENTIFIER) {
+                    Token variableToken = curr.get(1);
+                    statements.add(new Statement.IncrementStatement(variableToken, true));
+                    ++line;
+                    save = line;
+                } else {
+                    throw new SyntaxError(curr.get(0).getLine(), "Expected IDENTIFIER after INCREMENT keyword.");
+                }
+                break;
+
+            case IDENTIFIER:
+                // Handle POST-INCREMENT
+                if (curr.size() == 2 && curr.get(1).getType() == INCREMENT) {
+                    Token variableToken = curr.get(0);
+                    statements.add(new Statement.IncrementStatement(variableToken, false));
+                    ++line;
+                    save = line;
+                } else {
+                    throw new SyntaxError(curr.get(0).getLine(), "Invalid INCREMENT statement format after IDENTIFIER.");
+                }
+                break;
             case IF:
                 Token baseToken = currToken(curr);
                 if (baseToken.getValue().equals("KUNG WALA")) {
@@ -262,10 +291,25 @@ public class Parser {
                 nextToken(curr);
                 System.out.println("After consuming , " + currToken(curr).toString());
 
+//                // Parse increment
+//                Expression increment = null;
+//                if (currToken(curr).getType() != ARITH_CLOSE_P) {
+//                    increment = expression(curr); // e.g. ctr++
+//                }
                 // Parse increment
                 Expression increment = null;
                 if (currToken(curr).getType() != ARITH_CLOSE_P) {
-                    increment = expression(curr); // e.g. ctr++
+                    if (currToken(curr).getType() == IDENTIFIER && indx + 1 < curr.size() && curr.get(indx + 1).getType() == INCREMENT) {
+                        Token variableToken = currToken(curr);
+                        increment = new Expression.IncrementExpression(variableToken, false); // post-increment
+                        indx += 2;
+                    } else if (currToken(curr).getType() == INCREMENT && indx + 1 < curr.size() && curr.get(indx + 1).getType() == IDENTIFIER) {
+                        Token variableToken = curr.get(indx + 1);
+                        increment = new Expression.IncrementExpression(variableToken, true); // pre-increment
+                        indx += 2;
+                    } else {
+                        increment = expression(curr); // normal expression
+                    }
                 }
 
                 // Expect )
@@ -294,9 +338,6 @@ public class Parser {
 
                 statements.add(new Statement.ForStatement(initializer, forCondition, increment, body));
                 break;
-
-
-            // TODO: Handle FOR, DO, etc.
         }
 
         if (line - save == 1) --line;

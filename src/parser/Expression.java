@@ -17,6 +17,7 @@ public abstract class Expression {
         R visitVariable(Variable expression);
         R visitCompare(Compare expression);
         R visitEscapeCode(EscapeCode code);
+        R visitIncrementExpression(IncrementExpression expression);
     }
     // < expression >   -> < unaru >
     // < unary >        -> ( ADD | MINUS) ( < literal > | IDENTIFIER )
@@ -180,4 +181,19 @@ public abstract class Expression {
         }
     }
 
+    public static class IncrementExpression extends Expression {
+        public final Token variable;
+        public final boolean isPreIncrement; // true = ++x, false = x++
+
+        public IncrementExpression(Token variable, boolean isPreIncrement) {
+            this.variable = variable;
+            this.isPreIncrement = isPreIncrement;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitIncrementExpression(this);
+        }
+
+    }
 }

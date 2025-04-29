@@ -341,7 +341,14 @@ public class Lexer {
 
                 // operators
                 case ARITH_OP:
-                    addOperations(String.valueOf(lexemes.charAt(i)), lineToken); break;
+//                    addOperations(String.valueOf(lexemes.charAt(i)), lineToken); break;
+                    if (i + 1 < lexemes.length() && lexemes.charAt(i) == '+' && lexemes.charAt(i + 1) == '+') {
+                        addOperations("++", lineToken);
+                        i++; // Skip the second '+' character
+                    } else {
+                        addOperations(String.valueOf(lexemes.charAt(i)), lineToken);
+                    }
+                    break;
                 case MINUS:
                     if (i+1 >= lexemes.length()) throw new RuntimeError(currLine, "Unterminated character literal");
                     if (lexemes.charAt(i+1) == '-'){
@@ -440,6 +447,11 @@ public class Lexer {
             // assignment operation
             case "=":
                 type = ASS_OP; break;
+
+            // implement increment
+            case "++":
+                type = INCREMENT;
+                break;
         }
         if (type == NONE) throw new LexicalError(currLine,"Dili maila na operator '" + token + "'");
         lineToken.add(new Token(type, token));
