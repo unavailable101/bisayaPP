@@ -292,6 +292,14 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         evaluate(statement.expression);
         return null;
     }
+
+    @Override
+    public <R> R visitOutput(Statement.Output statement) {
+        Object value = evaluate(statement.expression);
+        System.out.print(stringify(value));
+        return null;
+    }
+
     @Override
     public Object visitEscapeCode(Expression.EscapeCode code) {
         return code.code.getValue().toString();
@@ -307,12 +315,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             if (!matchDT(statement.type.getValue().toString(), value)) throw new TypeError(statement.type.getLine(), "Cannot assign " + typeof(value) + " to variable of type " + statement.type.getValue().toString());
         }
         env.define(statement.type, statement.var.getValue().toString(), value);
-        return null;
-    }
-    @Override
-    public <R> R visitOutput(Statement.Output statement) {
-        Object value = evaluate(statement.expression);
-        System.out.print(stringify(value));
         return null;
     }
 
