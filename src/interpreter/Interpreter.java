@@ -160,11 +160,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
     @Override
-    public Object visitGroup(Expression.Group expression) {
-        return evaluate(expression.expression);
-    }
-
-    @Override
     public Object visitLogic(Expression.Logic expression) {
         Object left = evaluate(expression.left);
         Object right = evaluate(expression.right);
@@ -181,6 +176,12 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
         return null;
     }
+
+    @Override
+    public Object visitGroup(Expression.Group expression) {
+        return evaluate(expression.expression);
+    }
+
 
 
 
