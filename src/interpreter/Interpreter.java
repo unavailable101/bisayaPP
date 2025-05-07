@@ -168,10 +168,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             throw new TypeError(expression.logic_op.getLine(), "\n\tAng value sa first type " + left.toString() + "\n\tAng value sa second type " + right.toString());
 
         switch (expression.logic_op.getType()){
-            case LOG_AND :
-                return (boolean)left && (boolean)right;
             case LOG_OR :
                 return (boolean)left || (boolean)right;
+            case LOG_AND :
+                return (boolean)left && (boolean)right;
+
         }
 
         return null;
@@ -196,16 +197,18 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         env.assign(expression.name, value);
         return value;
     }
+
+    @Override
+    public Object visitVariable(Expression.Variable expression) {
+        return env.get(expression.name);
+    }
+
     @Override
     public Object visitLiteral(Expression.Literal expression) {
         return expression.literal;
     }
 
 
-    @Override
-    public Object visitVariable(Expression.Variable expression) {
-        return env.get(expression.name);
-    }
 
     @Override
     public Object visitCompare(Expression.Compare expression) {
