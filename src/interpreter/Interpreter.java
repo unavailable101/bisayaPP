@@ -491,6 +491,14 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return value.toString();
     }
 
+
+    private String typeof(Object value){
+        return value instanceof Integer ? "NUMERO" :
+               value instanceof Double ? "TIPIK" :
+               value instanceof Boolean ? "TINUOD" :
+               value instanceof String ? "PISI" :
+               value instanceof Character ? "LETRA" : "wala";
+    }
     private boolean matchDT(String type, Object value){
         switch (type){
             case "NUMERO":
@@ -506,13 +514,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             default:
                 return false;
         }
-    }
-    private String typeof(Object value){
-        return value instanceof Integer ? "NUMERO" :
-               value instanceof Double ? "TIPIK" :
-               value instanceof Boolean ? "TINUOD" :
-               value instanceof String ? "PISI" :
-               value instanceof Character ? "LETRA" : "wala";
     }
 
     private Object inputType (String input, String type, int line){
