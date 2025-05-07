@@ -45,26 +45,8 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             case LOG_NOT:
                 return  !isTrue(right);
         }
-//        return null;
         return  null;
     }
-//    @Override
-//    public Object visitUnary(Expression.Unary expression) {
-//        Object right = evaluate(expression.right);
-//        char type;
-//        switch (expression.op.getType()){
-//            case ARITH_MINUS:
-//                type = ifNumOperand(right, expression.op.getLine());
-//                switch (type) {
-//                    case 'i': return -(int) right;
-//                    case 'd': return -(int) right;
-//                }
-//            case LOG_NOT:
-//                return !isTrue(right);
-//        }
-//
-//        return null;
-//    }
 
     @Override
     public Object visitBinary(Expression.Binary expression) {
@@ -525,6 +507,13 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                 return false;
         }
     }
+    private String typeof(Object value){
+        return value instanceof Integer ? "NUMERO" :
+               value instanceof Double ? "TIPIK" :
+               value instanceof Boolean ? "TINUOD" :
+               value instanceof String ? "PISI" :
+               value instanceof Character ? "LETRA" : "wala";
+    }
 
     private Object inputType (String input, String type, int line){
         switch (type){
@@ -547,12 +536,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         }
     }
 
-    private String typeof(Object value){
-        return value instanceof Integer ? "NUMERO" :
-                value instanceof Double ? "TIPIK" :
-                value instanceof Boolean ? "TINUOD" :
-                value instanceof String ? "PISI" :
-                value instanceof Character ? "LETRA" : "wala";
-    }
+
 
 }
