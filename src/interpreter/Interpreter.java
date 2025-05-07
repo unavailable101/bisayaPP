@@ -499,22 +499,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                value instanceof String ? "PISI" :
                value instanceof Character ? "LETRA" : "wala";
     }
-    private boolean matchDT(String type, Object value){
-        switch (type){
-            case "NUMERO":
-                return value instanceof Integer;
-            case "TIPIK":
-                return value instanceof Double;
-            case "PISI":
-                return value instanceof String;
-            case "TINUOD":
-                return value instanceof Boolean;
-            case "LETRA":
-                return value instanceof Character;
-            default:
-                return false;
-        }
-    }
+
 
     private Object inputType (String input, String type, int line){
         switch (type){
@@ -534,6 +519,22 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                 return Character.valueOf(input.charAt(0));
             default:
                 throw new TypeError(line, "Wa ko kaila");
+        }
+    }
+    private boolean matchDT(String type, Object value){
+        switch (type){
+            case "NUMERO":
+                return value instanceof Integer;
+            case "TIPIK":
+                return value instanceof Double;
+            case "PISI":
+                return value instanceof String;
+            case "TINUOD":
+                return value instanceof Boolean;
+            case "LETRA":
+                return value instanceof Character;
+            default:
+                return false;
         }
     }
 
