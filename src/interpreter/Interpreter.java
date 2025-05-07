@@ -22,7 +22,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
 
-
     public void interpret (List<Statement> statements){
         for (Statement statement : statements){
             execute(statement);
@@ -144,6 +143,18 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
     @Override
+    public Object visitAssign(Expression.Assign expression) {
+        Object value = evaluate(expression.expression);
+
+        String dataType = env.getType(expression.name.getValue().toString()).getValue().toString();
+
+        if (!matchDT(dataType, value)) throw new TypeError(expression.name.getLine(),"Data Type mismatch");
+
+        env.assign(expression.name, value);
+        return value;
+    }
+
+    @Override
     public Object visitLogic(Expression.Logic expression) {
         Object left = evaluate(expression.left);
         Object right = evaluate(expression.right);
@@ -167,20 +178,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return evaluate(expression.expression);
     }
 
-
-
-
-    @Override
-    public Object visitAssign(Expression.Assign expression) {
-        Object value = evaluate(expression.expression);
-
-        String dataType = env.getType(expression.name.getValue().toString()).getValue().toString();
-
-        if (!matchDT(dataType, value)) throw new TypeError(expression.name.getLine(),"Data Type mismatch");
-
-        env.assign(expression.name, value);
-        return value;
-    }
 
     @Override
     public Object visitVariable(Expression.Variable expression) {
