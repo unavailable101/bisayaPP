@@ -13,12 +13,12 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     private Environment env = new Environment();
 
+    private Object evaluate (Expression expr){
+        return  expr.accept(this);
+    }
 
     public void execute(Statement statement){
         statement.accept(this);
-    }
-    private Object evaluate (Expression expr){
-        return  expr.accept(this);
     }
 
     public void interpret (List<Statement> statements){
