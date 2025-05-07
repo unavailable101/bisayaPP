@@ -13,85 +13,146 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     private Environment env = new Environment();
 
+
+    public void execute(Statement statement){
+        statement.accept(this);
+    }
+    private Object evaluate (Expression expr){
+        return  expr.accept(this);
+    }
+
     public void interpret (List<Statement> statements){
         for (Statement statement : statements){
             execute(statement);
         }
     }
 
-    public void execute(Statement statement){
-        statement.accept(this);
-    }
-
-    private Object evaluate (Expression expr){
-        return expr.accept(this);
-    }
-
     @Override
-    public Object visitUnary(Expression.Unary expression) {
-        Object right = evaluate(expression.right);
+    public Object visitUnary(Expression.Unary expression){
+        Object right = evaluate((expression.right));
         char type;
         switch (expression.op.getType()){
             case ARITH_MINUS:
                 type = ifNumOperand(right, expression.op.getLine());
-                switch (type) {
-                    case 'i': return -(int) right;
-                    case 'd': return -(int) right;
+                switch (type){
+                    case 'i':
+                        return  -(int) right;
+                    case 'd':
+                        return  -(int) right;
                 }
             case LOG_NOT:
-                return !isTrue(right);
+                return  !isTrue(right);
         }
-
-        return null;
+//        return null;
+        return  null;
     }
+//    @Override
+//    public Object visitUnary(Expression.Unary expression) {
+//        Object right = evaluate(expression.right);
+//        char type;
+//        switch (expression.op.getType()){
+//            case ARITH_MINUS:
+//                type = ifNumOperand(right, expression.op.getLine());
+//                switch (type) {
+//                    case 'i': return -(int) right;
+//                    case 'd': return -(int) right;
+//                }
+//            case LOG_NOT:
+//                return !isTrue(right);
+//        }
+//
+//        return null;
+//    }
 
     @Override
     public Object visitBinary(Expression.Binary expression) {
-        Object left = evaluate(expression.left);
-        Object right = evaluate(expression.right);
+         Object left = evaluate(expression.left);
+         Object right = evaluate(expression.right);
+//        Object left = evaluate(expression.left);
+//        Object right = evaluate(expression.right);
 
-        double l, r;
+         double ls, rs;
 
         switch (expression.operator.getType()){
             case ARITH_ADD :
                 switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left + (int) right;
                     case 'd' :
-                        l = left instanceof Integer ? (int)left : (double)left;
-                        r = right instanceof Integer ? (int)right : (double)right;
-                        return l + r;
+                        if(left instanceof Integer){
+                            ls = (int)left;
+                        }else{
+                            ls = (double)left;
+                        }
+                        if(right instanceof Integer){
+                            rs = (int)right;
+                        }else{
+                            rs = (double)right;
+                        }
+                        return ls + rs;
                 }
             case ARITH_MINUS :
                 switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left - (int) right;
                     case 'd' :
-                        l = left instanceof Integer ? (int)left : (double)left;
-                        r = right instanceof Integer ? (int)right : (double)right;
-                        return l - r;
+                        if(left instanceof Integer){
+                            ls = (int)left;
+                        }else{
+                            ls = (double)left;
+                        }
+                        if(right instanceof Integer){
+                            rs = (int)right;
+                        }else{
+                            rs = (double)right;
+                        }
+                        return ls - rs;
                 }
             case ARITH_MULT :
                 switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left * (int) right;
                     case 'd' :
-                        l = left instanceof Integer ? (int)left : (double)left;
-                        r = right instanceof Integer ? (int)right : (double)right;
-                        return l * r;
+                        if(left instanceof Integer){
+                            ls = (int)left;
+                        }else{
+                            ls = (double)left;
+                        }
+                        if(right instanceof Integer){
+                            rs = (int)right;
+                        }else{
+                            rs = (double)right;
+                        }
+                        return ls * rs;
                 }
             case ARITH_DIV :
                 switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left / (int) right;
                     case 'd' :
-                        l = left instanceof Integer ? (int)left : (double)left;
-                        r = right instanceof Integer ? (int)right : (double)right;
-                        return l / r;
+                        if(left instanceof Integer){
+                            ls = (int)left;
+                        }else{
+                            ls = (double)left;
+                        }
+                        if(right instanceof Integer){
+                            rs = (int)right;
+                        }else{
+                            rs = (double)right;
+                        }
+                        return ls / rs;
                 }
             case ARITH_MOD :
                 switch (ifNumOperands(left, right, expression.operator.getLine())) {
                     case 'i' : return (int) left % (int) right;
                     case 'd' :
-                        l = left instanceof Integer ? (int)left : (double)left;
-                        r = right instanceof Integer ? (int)right : (double)right;
-                        return l % r;
+                        if(left instanceof Integer){
+                            ls = (int)left;
+                        }else{
+                            ls = (double)left;
+                        }
+                        if(right instanceof Integer){
+                            rs = (int)right;
+                        }else{
+                            rs = (double)right;
+                        }
+                        return ls % rs;
                 }
             case CONCAT:
                 return stringify(left) + stringify(right);
@@ -123,11 +184,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Object visitLiteral(Expression.Literal expression) {
-        return expression.literal;
-    }
-
-    @Override
     public Object visitAssign(Expression.Assign expression) {
         Object value = evaluate(expression.expression);
 
@@ -138,6 +194,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         env.assign(expression.name, value);
         return value;
     }
+    @Override
+    public Object visitLiteral(Expression.Literal expression) {
+        return expression.literal;
+    }
+
 
     @Override
     public Object visitVariable(Expression.Variable expression) {
@@ -148,7 +209,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     public Object visitCompare(Expression.Compare expression) {
         Object left = evaluate(expression.left);
         Object right = evaluate(expression.right);
-        double l,r;
+        double ls,rs;
         switch (expression.op.getType()){
             case ARITH_EQUAL :
                 return isEqual(left, right);
@@ -158,38 +219,78 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                 switch (ifNumOperands(left, right, expression.op.getLine())) {
                     case 'i' : return (int) left > (int) right;
                     case 'd' :
-                        l = left instanceof Integer ? (int)left : (double)left;
-                        r = right instanceof Integer ? (int)right : (double)right;
-                        return l > r;
+                        if(left instanceof Integer){
+                            ls = (int)left;
+                        }else{
+                            ls = (double)left;
+                        }
+                        if(right instanceof Integer){
+                            rs = (int)right;
+                        }else{
+                            rs = (double)right;
+                        }
+                        return ls > rs;
                 }
             case ARITH_LT :
                 switch (ifNumOperands(left, right, expression.op.getLine())) {
                     case 'i' : return (int) left < (int) right;
                     case 'd' :
-                        l = left instanceof Integer ? (int)left : (double)left;
-                        r = right instanceof Integer ? (int)right : (double)right;
-                        return l < r;
+                        if(left instanceof Integer){
+                            ls = (int)left;
+                        }else{
+                            ls = (double)left;
+                        }
+                        if(right instanceof Integer){
+                            rs = (int)right;
+                        }else{
+                            rs = (double)right;
+                        }
+                        return ls < rs;
                 }
-            case ARITH_LOE :
-                switch (ifNumOperands(left, right, expression.op.getLine())) {
-                    case 'i' : return (int) left <= (int) right;
-                    case 'd' :
-                        l = left instanceof Integer ? (int)left : (double)left;
-                        r = right instanceof Integer ? (int)right : (double)right;
-                        return l <= r;
-                }
+
             case ARITH_GOE :
                 switch (ifNumOperands(left, right, expression.op.getLine())) {
                     case 'i' : return (int) left >= (int) right;
                     case 'd' :
-                        l = left instanceof Integer ? (int)left : (double)left;
-                        r = right instanceof Integer ? (int)right : (double)right;
-                        return l >= r;
+                        if(left instanceof Integer){
+                            ls = (int)left;
+                        }else{
+                            ls = (double)left;
+                        }
+                        if(right instanceof Integer){
+                            rs = (int)right;
+                        }else{
+                            rs = (double)right;
+                        }
+                        return ls >= rs;
                 }
+
+            case ARITH_LOE :
+                switch (ifNumOperands(left, right, expression.op.getLine())) {
+                    case 'i' : return (int) left <= (int) right;
+                    case 'd' :
+                        if(left instanceof Integer){
+                            ls = (int)left;
+                        }else{
+                            ls = (double)left;
+                        }
+                        if(right instanceof Integer){
+                            rs = (int)right;
+                        }else{
+                            rs = (double)right;
+                        }
+                        return ls <= rs;
+                }
+
         }
         return null;
     }
 
+
+    @Override
+    public Object visitEscapeCode(Expression.EscapeCode code) {
+        return code.code.getValue().toString();
+    }
     @Override
     public <R> R visitExpr(Statement.Expr statement) {
         evaluate(statement.expression);
@@ -197,14 +298,21 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Object visitEscapeCode(Expression.EscapeCode code) {
-        return code.code.getValue().toString();
-    }
-
-    @Override
     public <R> R visitOutput(Statement.Output statement) {
         Object value = evaluate(statement.expression);
         System.out.print(stringify(value));
+        return null;
+    }
+
+    @Override
+    public <R> R visitVarDeclaration(Statement.VarDeclaration statement) {
+        Object value = null;
+        if (statement.initialization != null) {
+            value = evaluate(statement.initialization);
+
+            if (!matchDT(statement.type.getValue().toString(), value)) throw new TypeError(statement.type.getLine(), "Cannot assign " + typeof(value) + " to variable of type " + statement.type.getValue().toString());
+        }
+        env.define(statement.type, statement.var.getValue().toString(), value);
         return null;
     }
 
@@ -220,17 +328,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
 
-    @Override
-    public <R> R visitVarDeclaration(Statement.VarDeclaration statement) {
-        Object value = null;
-        if (statement.initialization != null) {
-            value = evaluate(statement.initialization);
 
-            if (!matchDT(statement.type.getValue().toString(), value)) throw new TypeError(statement.type.getLine(), "Cannot assign " + typeof(value) + " to variable of type " + statement.type.getValue().toString());
-        }
-        env.define(statement.type, statement.var.getValue().toString(), value);
-        return null;
-    }
 
     @Override
     public <R> R visitIncrementStatement(Statement.IncrementStatement statement) {
