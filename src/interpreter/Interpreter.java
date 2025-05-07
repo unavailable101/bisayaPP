@@ -501,6 +501,23 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
 
+    private boolean matchDT(String type, Object value){
+        switch (type){
+            case "NUMERO":
+                return value instanceof Integer;
+            case "TIPIK":
+                return value instanceof Double;
+            case "PISI":
+                return value instanceof String;
+            case "TINUOD":
+                return value instanceof Boolean;
+            case "LETRA":
+                return value instanceof Character;
+            default:
+                return false;
+        }
+    }
+
     private Object inputType (String input, String type, int line){
         switch (type){
             case "NUMERO":
@@ -521,23 +538,5 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                 throw new TypeError(line, "Wa ko kaila");
         }
     }
-    private boolean matchDT(String type, Object value){
-        switch (type){
-            case "NUMERO":
-                return value instanceof Integer;
-            case "TIPIK":
-                return value instanceof Double;
-            case "PISI":
-                return value instanceof String;
-            case "TINUOD":
-                return value instanceof Boolean;
-            case "LETRA":
-                return value instanceof Character;
-            default:
-                return false;
-        }
-    }
-
-
 
 }
