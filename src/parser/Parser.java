@@ -541,10 +541,12 @@ public class Parser {
 
     private Statement outputStatement(List<Token> tokens){
         consume(currToken(tokens), COLON, "Walay ':' human sa " + prevToken(tokens));
+        System.out.println("output: " + currToken(tokens));
         nextToken(tokens);
         Expression expr = expression(tokens);
 
-        if (indx < lineTokens.get(line).size() && currToken(tokens).getType() != CONCAT) {
+        System.out.println("output: " + currToken(tokens));
+        if (currToken(tokens).getType() != BOOLEAN && indx < lineTokens.get(line).size() && currToken(tokens).getType() != CONCAT) {
             throw new SyntaxError(currToken(tokens).getLine(),
                     "Dili pwede magbutang extra expression sa IPAKITA. Gamita ang '&' kung gusto mag-concatenate.");
         }
