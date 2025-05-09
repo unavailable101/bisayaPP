@@ -20,14 +20,6 @@ class Environment {
         this.enclosing = enclosing;
     }
 
-    Object get(Token name){
-        if (values.containsKey(name.getValue())) return values.get(name.getValue());
-
-        if (enclosing != null) return enclosing.get(name); // search in parent
-
-        throw new UndefinedVariableError(name.getLine(), name.getValue().toString());
-    }
-
     Token getType(String var) {
         if (types.containsKey(var)) {
             return types.get(var);
@@ -39,10 +31,12 @@ class Environment {
 
         throw new RuntimeException("Undefined variable '" + var + "'");
     }
+    Object get(Token name){
+        if (values.containsKey(name.getValue())) return values.get(name.getValue());
 
-    void define (Token type, String name, Object value){
-        values.put(name, value);
-        types.put(name, type);
+        if (enclosing != null) return enclosing.get(name); // search in parent
+
+        throw new UndefinedVariableError(name.getLine(), name.getValue().toString());
     }
 
     void assign (Token name, Object value){
@@ -58,4 +52,11 @@ class Environment {
 
         throw new UndefinedVariableError(name.getLine(),name.getValue().toString() );
     }
+
+    void define (Token type, String name, Object value){
+        values.put(name, value);
+        types.put(name, type);
+    }
+
+
 }
