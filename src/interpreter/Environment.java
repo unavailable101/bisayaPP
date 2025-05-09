@@ -31,6 +31,7 @@ class Environment {
 
         throw new RuntimeException("Undefined variable '" + var + "'");
     }
+
     Object get(Token name){
         if (values.containsKey(name.getValue())) return values.get(name.getValue());
 
@@ -39,6 +40,11 @@ class Environment {
         throw new UndefinedVariableError(name.getLine(), name.getValue().toString());
     }
 
+
+    void define (Token type, String name, Object value){
+        values.put(name, value);
+        types.put(name, type);
+    }
     void assign (Token name, Object value){
         if (values.containsKey(name.getValue().toString())){
             values.put(name.getValue().toString(), value);
@@ -51,11 +57,6 @@ class Environment {
         }
 
         throw new UndefinedVariableError(name.getLine(),name.getValue().toString() );
-    }
-
-    void define (Token type, String name, Object value){
-        values.put(name, value);
-        types.put(name, type);
     }
 
 
