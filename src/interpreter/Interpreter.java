@@ -293,19 +293,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
 
     @Override
-    public <R> R visitVarDeclaration(Statement.VarDeclaration statement) {
-        Object value = null;
-        if (statement.initialization != null) {
-            value = evaluate(statement.initialization);
-
-            if (!matchDT(statement.type.getValue().toString(), value)) throw new TypeError(statement.type.getLine(), "Cannot assign " + typeof(value) + " to variable of type " + statement.type.getValue().toString());
-        }
-        env.define(statement.type, statement.var.getValue().toString(), value);
-        return null;
-    }
-
-
-    @Override
     public <R> R visitInput(Statement.Input statement) {
         Scanner sc = new Scanner(System.in);
 
@@ -316,7 +303,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
         return null;
     }
-
 
     @Override
     public Object visitIncrementExpression(Expression.IncrementExpression expr) {
@@ -341,6 +327,22 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             return original;
         }
     }
+
+    @Override
+    public <R> R visitVarDeclaration(Statement.VarDeclaration statement) {
+        Object value = null;
+        if (statement.initialization != null) {
+            value = evaluate(statement.initialization);
+
+            if (!matchDT(statement.type.getValue().toString(), value)) throw new TypeError(statement.type.getLine(), "Cannot assign " + typeof(value) + " to variable of type " + statement.type.getValue().toString());
+        }
+        env.define(statement.type, statement.var.getValue().toString(), value);
+        return null;
+    }
+
+
+
+
 
     @Override
     public <R> R visitIncrementStatement(Statement.IncrementStatement statement) {
