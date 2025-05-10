@@ -318,23 +318,6 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
 
-
-    @Override
-    public <R> R visitIncrementStatement(Statement.IncrementStatement statement) {
-        var variable = statement.variableName;
-
-        Object value = env.get(variable);
-
-        if (!(value instanceof Integer)) {
-            throw new RuntimeError(variable.getLine(), "Variable '" + variable.getValue().toString() + "' is not an integer.");
-        }
-
-        int incrementedValue = (Integer) value + 1;
-        env.assign(variable, incrementedValue);
-
-        return null;
-    }
-
     @Override
     public Object visitIncrementExpression(Expression.IncrementExpression expr) {
         var variable = expr.variable;
@@ -358,6 +341,24 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             return original;
         }
     }
+
+    @Override
+    public <R> R visitIncrementStatement(Statement.IncrementStatement statement) {
+        var variable = statement.variableName;
+
+        Object value = env.get(variable);
+
+        if (!(value instanceof Integer)) {
+            throw new RuntimeError(variable.getLine(), "Variable '" + variable.getValue().toString() + "' is not an integer.");
+        }
+
+        int incrementedValue = (Integer) value + 1;
+        env.assign(variable, incrementedValue);
+
+        return null;
+    }
+
+
 
 
     @Override
