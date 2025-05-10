@@ -304,29 +304,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return null;
     }
 
-    @Override
-    public Object visitIncrementExpression(Expression.IncrementExpression expr) {
-        var variable = expr.variable;
 
-        Object value = env.get(variable);
-
-        if (!(value instanceof Integer)) {
-            throw new RuntimeError(variable.getLine(), "Variable '" + variable.getValue().toString() + "' is not an integer.");
-        }
-
-        int intValue = (Integer) value;
-
-        if (expr.isPreIncrement) {
-            intValue++;
-            env.assign(expr.variable, intValue); // update the value
-            return intValue;
-        } else {
-            int original = intValue;
-            intValue++;
-            env.assign(expr.variable, intValue); // update the value
-            return original;
-        }
-    }
 
     @Override
     public <R> R visitVarDeclaration(Statement.VarDeclaration statement) {
@@ -361,7 +339,29 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
 
+    @Override
+    public Object visitIncrementExpression(Expression.IncrementExpression expr) {
+        var variable = expr.variable;
 
+        Object value = env.get(variable);
+
+        if (!(value instanceof Integer)) {
+            throw new RuntimeError(variable.getLine(), "Variable '" + variable.getValue().toString() + "' is not an integer.");
+        }
+
+        int intValue = (Integer) value;
+
+        if (expr.isPreIncrement) {
+            intValue++;
+            env.assign(expr.variable, intValue); // update the value
+            return intValue;
+        } else {
+            int original = intValue;
+            intValue++;
+            env.assign(expr.variable, intValue); // update the value
+            return original;
+        }
+    }
 
     @Override
     public <R> R visitIfStatement(Statement.IfStatement statement) {
